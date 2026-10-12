@@ -1,0 +1,53 @@
+# Flutter / Dart generated and local state
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+coverage/
+lcov.info
+
+# Platform local configuration (never commit SDK paths or signing material)
+android/local.properties
+android/.gradle/
+android/app/build/
+android/key.properties
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+ios/Flutter/App.framework
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/ephemeral/
+*.jks
+*.keystore
+*.p12
+*.mobileprovision
+*.iml
+*.log
+
+# Secrets and environment files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Temporary artifacts
+tmp/
+*.tmp
+node_modules/
+
+# sweetmelon CLI backups (created before generated files are overwritten)
+.sweetmelon/
+
+# Sweetmelon CLI state: backups written by `sync` / `rename` / `icon` / `bump`
+.sweetmelon/
+pubspec.lock

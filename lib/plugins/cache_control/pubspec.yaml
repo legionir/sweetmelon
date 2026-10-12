@@ -1,0 +1,19 @@
+name: cache_control_plugin
+description: WebView and app cache control plugin
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  sweetmelon:
+    path: ../../..
+  flutter:
+    sdk: flutter
+  plugin_engine:
+    path: ../../packages/plugin_engine
+  core:
+    path: ../../packages/core
+  webview_flutter: ^4.8.0
+  path_provider: ^2.1.1

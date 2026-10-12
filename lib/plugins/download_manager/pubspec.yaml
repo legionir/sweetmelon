@@ -1,0 +1,21 @@
+name: download_manager_plugin
+description: Download manager with progress events
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  sweetmelon:
+    path: ../../..
+  flutter:
+    sdk: flutter
+  plugin_engine:
+    path: ../../packages/plugin_engine
+  core:
+    path: ../../packages/core
+  http: ^1.1.2
+  mime: ^1.0.5
+  path_provider: ^2.1.1
+  path: ^1.9.0

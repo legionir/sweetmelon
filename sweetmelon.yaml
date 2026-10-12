@@ -1,0 +1,287 @@
+# Sweetmelon Plugin Configuration
+# هر پلاگین که true باشد فعال و رجیستر می‌شود.
+# هر پلاگین که false باشد:
+#   - از service_locator حذف می‌شود
+#   - dependency‌های وابسته از pubspec حذف می‌شود
+#   - permission‌های سیستمی از Manifest / Info.plist حذف می‌شود
+#   - از native-sdk.js سبک‌سازی می‌شود
+
+project:
+  name: sweetmelon
+  display_name: Sweetmelon
+  version: 2.4.0
+  min_sdk: "3.0.0"
+
+  # مسیر استاتیک اپلیکیشن وب
+  www_path: assets/www
+  entry_point: index.html
+
+plugins:
+  # ════════════════════════════════════════════════════════════
+  #  ۱. پلاگین‌های فعال پیش‌فرض هسته
+  # ════════════════════════════════════════════════════════════
+  storage:
+    enabled: true              # ذخیره‌سازی محلی دائمی (کلید-مقدار)
+
+  camera:
+    enabled: true              # عکس‌برداری با دوربین (takePhoto) و انتخاب از گالری
+
+  file_picker:
+    enabled: true              # انتخاب تصاویر و فایل‌های سیستمی
+
+  file_system:
+    enabled: true              # خواندن تصاویر ذخیره‌شده و فایل‌های دستگاه به‌صورت Base64
+
+  clipboard:
+    enabled: true              # کپی متن پیام‌ها و کدهای برنامه‌نویسی با دکمه Copy Code
+
+  toast:
+    enabled: true              # اعلان‌های پیام و وضعیت نیتیو
+
+  haptic:
+    enabled: true              # فیدبک لمسی (ویبره خفیف) هنگام کلیک روی دکمه‌ها و کپی
+
+  permission:
+    enabled: true              # مدیریت مجوزهای نیتیو دوربین و ذخیره‌سازی
+
+  device_info:
+    enabled: true              # دریافت مشخصات و مدل دستگاه
+
+  connectivity:
+    enabled: true              # پایش وضعیت اتصال به اینترنت قبل از ارسال درخواست هوش مصنوعی
+
+  network_info:
+    enabled: true              # اطلاعات شبکه و آدرس IP برای مدل‌های لوکال
+
+  secure_storage:
+    enabled: true              # ذخیره‌سازی رمزنگاری‌شده مقادیر حساس
+
+  encryption:
+    enabled: true              # الگوریتم‌های رمزنگاری و هش
+
+  status_bar:
+    enabled: true              # هماهنگی رنگ نوار وضعیت با تم دارک اپ
+
+  safe_area:
+    enabled: true              # مدیریت حاشیه‌های بریدگی نمایشگر (Notch / Insets)
+
+  keyboard:
+    enabled: true              # مدیریت خودکار ارتفاع و نمایش کیبورد در موبایل
+
+  app_lifecycle:
+    enabled: true              # مدیریت وضعیت تعلیق و بازگشت اپلیکیشن به پس‌زمینه/پیش‌زمینه
+
+  back_button:
+    enabled: true              # مدیریت دکمه بازگشت اندروید (بستن سایدبار و مدال‌ها)
+
+  # ════════════════════════════════════════════════════════════
+  #  ۲. رسانه و چندرسانه‌ای (Media & Audio)
+  # ════════════════════════════════════════════════════════════
+  camera_preview:
+    enabled: false
+  document_scanner:
+    enabled: false
+  qr_scanner:
+    enabled: false
+  screenshot:
+    enabled: false
+  audio:
+    enabled: false
+  video_player:
+    enabled: false
+  media_manager:
+    enabled: false
+  speech_to_text:
+    enabled: false
+  text_to_speech:
+    enabled: false
+
+  # ════════════════════════════════════════════════════════════
+  #  ۳. شبکه، وب و مرورگر (Network & Web)
+  # ════════════════════════════════════════════════════════════
+  http_native:
+    enabled: true             # درخواست‌های AI مستقیماً از طریق fetch وب انجام می‌شوند
+  websocket:
+    enabled: false
+  socket:
+    enabled: false
+  ping_dns:
+    enabled: false
+  wifi_manager:
+    enabled: false
+  wifi_advanced:
+    enabled: false
+  cookie_manager:
+    enabled: false
+  cache_control:
+    enabled: false
+  in_app_browser:
+    enabled: false
+
+  # ════════════════════════════════════════════════════════════
+  #  ۴. ارتباطات، تماس و مخاطبین (Communication)
+  # ════════════════════════════════════════════════════════════
+  contacts:
+    enabled: false             # غیرضروری برای هوش مصنوعی (حذف مجوز خطرناک READ_CONTACTS)
+  phone_dialer:
+    enabled: true             # غیرضروری (حذف مجوز تماس)
+  sms_otp:
+    enabled: false             # غیرضروری (حذف مجوز SMS)
+  email_composer:
+    enabled: false
+  share:
+    enabled: true
+  share_target:
+    enabled: false
+  sim_info:
+    enabled: false
+
+  # ════════════════════════════════════════════════════════════
+  #  ۵. حسگرها و موقعیت مکانی (Sensors & Location)
+  # ════════════════════════════════════════════════════════════
+  geolocation:
+    enabled: true             # غیرضروری برای هوش مصنوعی (حذف مجوز حساس LOCATION)
+  background_geolocation:
+    enabled: false
+  google_maps:
+    enabled: false
+  sensors:
+    enabled: false
+  shake_detection:
+    enabled: false
+  pedometer:
+    enabled: false
+  bluetooth:
+    enabled: false
+  nfc:
+    enabled: false
+  flashlight:
+    enabled: false
+
+  # ════════════════════════════════════════════════════════════
+  #  ۶. مدیریت فایل و فشرده‌سازی پیشرفته (Files & DB)
+  # ════════════════════════════════════════════════════════════
+  database:
+    enabled: true
+  download_manager:
+    enabled: true
+  file_compressor:
+    enabled: false
+  file_opener:
+    enabled: false
+  zip:
+    enabled: false
+  pdf_plugin:
+    enabled: false
+
+  # ════════════════════════════════════════════════════════════
+  #  ۷. احراز هویت، بیومتریک و امنیت (Security & Auth)
+  # ════════════════════════════════════════════════════════════
+  biometrics:
+    enabled: false
+  oauth2:
+    enabled: false
+  social_login:
+    enabled: false
+  root_detection:
+    enabled: false
+  app_integrity:
+    enabled: false
+  privacy_screen:
+    enabled: false
+
+  # ════════════════════════════════════════════════════════════
+  #  ۸. اعلان‌ها و فایربیس (Firebase & Notifications)
+  # ════════════════════════════════════════════════════════════
+  notification:
+    enabled: true
+  push_notification:
+    enabled: false
+  badge:
+    enabled: false
+  firebase_auth:
+    enabled: false
+  firebase_analytics:
+    enabled: false
+  firebase_crashlytics:
+    enabled: false
+  firebase_remote_config:
+    enabled: false
+
+  # ════════════════════════════════════════════════════════════
+  #  ۹. زمان‌بندی، پس‌زمینه و فرانت سیستم (Tasks & System UI)
+  # ════════════════════════════════════════════════════════════
+  alarm:
+    enabled: false
+  calendar:
+    enabled: false
+  background_task:
+    enabled: false
+  foreground_service:
+    enabled: false
+  wake_lock:
+    enabled: false
+  kiosk_mode:
+    enabled: false
+  screen_brightness:
+    enabled: false
+  navigation_bar:
+    enabled: false
+  orientation:
+    enabled: true
+  text_zoom:
+    enabled: false
+  volume_buttons:
+    enabled: false
+  dialog:
+    enabled: false
+  action_sheet:
+    enabled: false
+  date_picker:
+    enabled: false
+  accessibility:
+    enabled: false
+  native_settings:
+    enabled: false
+  intent_launcher:
+    enabled: false
+  intent_link:
+    enabled: true
+  splash_screen:
+    enabled: false
+
+  # ════════════════════════════════════════════════════════════
+  #  ۱۰. سرورهای محلی روی دستگاه (Device Servers)
+  # ════════════════════════════════════════════════════════════
+  http_server:
+    enabled: false
+  websocket_server:
+    enabled: false
+  tcp_server:
+    enabled: false
+  udp_server:
+    enabled: false
+  ftp_server:
+    enabled: false
+  ftp_client:
+    enabled: false
+  ssh_server:
+    enabled: false
+  ssh_client:
+    enabled: false
+
+  # ════════════════════════════════════════════════════════════
+  #  ۱۱. استور، پرداخت و به‌روزرسانی (Store & Updates)
+  # ════════════════════════════════════════════════════════════
+  in_app_purchase:
+    enabled: false
+  in_app_review:
+    enabled: false
+  native_market:
+    enabled: false
+  app_update:
+    enabled: false
+  live_updater:
+    enabled: false
+  loader_status:
+    enabled: false

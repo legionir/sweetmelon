@@ -1,0 +1,17 @@
+name: firebase_auth_plugin
+description: Firebase Authentication bridge plugin
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  sweetmelon:
+    path: ../../..
+  flutter:
+    sdk: flutter
+  plugin_engine:
+    path: ../../packages/plugin_engine
+  firebase_auth: ^5.3.1
+  google_sign_in: ^6.2.1

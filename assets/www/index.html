@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1020" />
+  <title>Sweetmelon</title>
+  <link rel="icon" type="image/png" href="img/logo.png" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+<div class="container">
+
+  <header class="page-header">
+    <div class="brand">
+      <img class="logo" src="img/logo.png" alt="Sweetmelon logo" width="72" height="72" />
+      <div>
+        <h1>Sweetmelon Native Bridge</h1>
+        <p>Test suite — try every plugin from JavaScript</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="secondary" id="btnBridgeInfo">Bridge Info</button>
+      <button class="secondary" id="btnBatchTest">Batch Test</button>
+      <button class="secondary" id="btnClearLog">Clear Log</button>
+    </div>
+  </header>
+
+  <section class="status-grid">
+    <div class="status-card"><span class="status-label">Bridge</span><strong id="bridgeState">Waiting...</strong></div>
+    <div class="status-card"><span class="status-label">Requests</span><strong id="requestCount">0</strong></div>
+    <div class="status-card"><span class="status-label">Pending</span><strong id="pendingCount">0</strong></div>
+    <div class="status-card"><span class="status-label">Events</span><strong id="eventCount">0</strong></div>
+  </section>
+
+  <div class="toolbar">
+    <input id="panelFilter" type="search" placeholder="Filter plugins…" aria-label="Filter plugins" />
+    <div class="chips" id="groupChips" role="group" aria-label="Plugin groups"></div>
+    <button class="secondary" id="btnToggleAll" type="button">Collapse all</button>
+  </div>
+
+  <div class="layout">
+    <main class="panels" id="panels">
+    <section class="panel" data-plugin="permission" data-group="System">
+      <h2 class="panel-title"><span class="panel-name">Permission</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <input id="permissionName" value="camera" placeholder="camera / location / notification" />
+      <button id="btnPermissionCheck">Check</button>
+      <button id="btnPermissionRequest">Request</button>
+      <button id="btnPermissionKnown">Known</button>
+      <button id="btnPermissionSettings">Settings</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="app_lifecycle" data-group="System">
+      <h2 class="panel-title"><span class="panel-name">App Lifecycle</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <button id="btnLifecycleState">Get State</button>
+      <button id="btnLifecycleEnable">Enable Events</button>
+      <button id="btnLifecycleDisable">Disable Events</button>
+      <button id="btnLifecycleInfo">Info</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="device_info" data-group="System">
+      <h2 class="panel-title"><span class="panel-name">Device Info</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <button id="btnDeviceInfo">Device</button>
+      <button id="btnAppInfo">App</button>
+      <button id="btnDeviceAll">All</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="clipboard" data-group="System">
+      <h2 class="panel-title"><span class="panel-name">Clipboard</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <input id="clipboardText" value="Copied from Sweetmelon" placeholder="text" />
+    </div>
+    <div class="row">
+      <button id="btnClipboardWrite">Write</button>
+      <button id="btnClipboardRead">Read</button>
+      <button id="btnClipboardHas">Has?</button>
+      <button id="btnClipboardClear">Clear</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="share" data-group="System">
+      <h2 class="panel-title"><span class="panel-name">Share</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <input id="shareText" value="Hello from Sweetmelon native share" placeholder="text" />
+    </div>
+    <div class="row">
+      <button id="btnShareText">Share Text</button>
+      <button id="btnShareFile">Create & Share File</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="notification" data-group="System">
+      <h2 class="panel-title"><span class="panel-name">Notification</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <input id="notifTitle" value="Hello" placeholder="title" />
+      <input id="notifBody" value="This is a local notification from JS" placeholder="body" />
+    </div>
+    <div class="row">
+      <button id="btnNotifShow">Show</button>
+      <button id="btnNotifCancelAll">Cancel All</button>
+      <button id="btnNotifActive">Active</button>
+      <button id="btnNotifPending">Pending</button>
+      <button id="btnNotifChannel">Create Channel</button>
+      <button id="btnNotifInfo">Info</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="connectivity" data-group="Network">
+      <h2 class="panel-title"><span class="panel-name">Connectivity</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <button id="btnConnectivityStatus">Status</button>
+      <button id="btnConnectivityStart">Start Watch</button>
+      <button id="btnConnectivityStop">Stop Watch</button>
+      <button id="btnConnectivityIsOnline">Online?</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="network_info" data-group="Network">
+      <h2 class="panel-title"><span class="panel-name">Network Info</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <button id="btnNetInterfaces">Interfaces</button>
+      <button id="btnNetIps">IP Addresses</button>
+      <button id="btnNetLocalIp">Local IP</button>
+      <button id="btnNetExternalIp">External IP</button>
+      <button id="btnNetGateway">Gateway</button>
+      <button id="btnNetHostname">Hostname</button>
+      <button id="btnNetInfo">Info</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="http_native" data-group="Network">
+      <h2 class="panel-title"><span class="panel-name">HTTP Native</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <input id="httpUrl" value="https://jsonplaceholder.typicode.com/todos/1" placeholder="url" />
+    </div>
+    <div class="row">
+      <button id="btnHttpGet">GET</button>
+      <button id="btnHttpPost">POST</button>
+      <button id="btnHttpDownload">Download</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="intent_link" data-group="Network">
+      <h2 class="panel-title"><span class="panel-name">Intent / Deep Link</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <input id="intentUrl" value="https://flutter.dev" placeholder="url" />
+    </div>
+    <div class="row">
+      <button id="btnIntentCanOpen">Can Open</button>
+      <button id="btnIntentOpen">Open</button>
+      <button id="btnIntentInitial">Initial Link</button>
+      <button id="btnIntentLatest">Latest</button>
+      <button id="btnIntentListenStart">Listen</button>
+      <button id="btnIntentListenStop">Stop</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="download_manager" data-group="Network">
+      <h2 class="panel-title"><span class="panel-name">Download Manager</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <input id="downloadUrl" value="https://speed.hetzner.de/100MB.bin" placeholder="download url" />
+    </div>
+    <div class="row">
+      <button id="btnDlStart">Download</button>
+      <button id="btnDlCancelAll">Cancel All</button>
+      <button id="btnDlActive">Active</button>
+      <button id="btnDlInfo">Info</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="storage" data-group="Storage">
+      <h2 class="panel-title"><span class="panel-name">Storage</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <input id="storageKey" value="demo_key" placeholder="key" />
+      <input id="storageValue" value='{"hello":"world"}' placeholder="value" />
+    </div>
+    <div class="row">
+      <button id="btnStorageSet">Set</button>
+      <button id="btnStorageGet">Get</button>
+      <button id="btnStorageHas">Has</button>
+      <button id="btnStorageKeys">Keys</button>
+      <button id="btnStorageRemove">Remove</button>
+      <button id="btnStorageClear">Clear</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="file_system" data-group="Storage">
+      <h2 class="panel-title"><span class="panel-name">File System</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <input id="filePath" value="demo/test.txt" placeholder="path" />
+      <input id="fileContent" value="Hello from WebView" placeholder="content" />
+    </div>
+    <div class="row">
+      <button id="btnFsDirs">Dirs</button>
+      <button id="btnFsWrite">Write</button>
+      <button id="btnFsRead">Read</button>
+      <button id="btnFsExists">Exists</button>
+      <button id="btnFsList">List</button>
+      <button id="btnFsStat">Stat</button>
+      <button id="btnFsDelete">Delete</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="file_picker" data-group="Storage">
+      <h2 class="panel-title"><span class="panel-name">File Picker</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <button id="btnPickFiles">Files</button>
+      <button id="btnPickImages">Images</button>
+      <button id="btnPickVideos">Videos</button>
+      <button id="btnPickMedia">Media</button>
+      <button id="btnPickDir">Directory</button>
+      <button id="btnPickInfo">Info</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="database" data-group="Storage">
+      <h2 class="panel-title"><span class="panel-name">Database (SQLite)</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <button id="btnDbOpen">Open</button>
+      <button id="btnDbInsert">Insert</button>
+      <button id="btnDbQuery">Query All</button>
+      <button id="btnDbUpdate">Update</button>
+      <button id="btnDbDelete">Delete</button>
+      <button id="btnDbDrop">Drop DB</button>
+      <button id="btnDbInfo">Info</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="secure_storage" data-group="Security">
+      <h2 class="panel-title"><span class="panel-name">Secure Storage</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <input id="secKey" value="token" placeholder="key" />
+      <input id="secValue" value="my-secret-jwt-token-xyz" placeholder="value" />
+    </div>
+    <div class="row">
+      <button id="btnSecSet">Set</button>
+      <button id="btnSecGet">Get</button>
+      <button id="btnSecHas">Has</button>
+      <button id="btnSecKeys">Keys</button>
+      <button id="btnSecRemove">Remove</button>
+      <button id="btnSecClear">Clear</button>
+      <button id="btnSecInfo">Info</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="encryption" data-group="Security">
+      <h2 class="panel-title"><span class="panel-name">Encryption</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <input id="encText" value="hello sweetmelon" placeholder="text" />
+    </div>
+    <div class="row">
+      <input id="encKey" value="" placeholder="AES key (base64) — press Generate Key" />
+      <input id="encIv" value="" placeholder="IV (base64)" />
+    </div>
+    <div class="row">
+      <input id="encCipher" value="" placeholder="ciphertext (base64)" />
+    </div>
+    <div class="row">
+      <button id="btnEncGenKey">Generate Key</button>
+      <button id="btnEncAesEncrypt">AES Encrypt</button>
+      <button id="btnEncAesDecrypt">AES Decrypt</button>
+      <button id="btnEncSha256">SHA-256</button>
+      <button id="btnEncSha512">SHA-512</button>
+      <button id="btnEncMd5">MD5</button>
+      <button id="btnEncHmac">HMAC-SHA256</button>
+      <button id="btnEncRandom">Random Bytes</button>
+      <button id="btnEncB64Enc">Base64 Encode</button>
+      <button id="btnEncB64Dec">Base64 Decode</button>
+      <button id="btnEncInfo">Info</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="biometrics" data-group="Security">
+      <h2 class="panel-title"><span class="panel-name">Biometrics</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <button id="btnBioAvailable">Is Available</button>
+      <button id="btnBioTypes">Available Types</button>
+      <button id="btnBioAuth">Authenticate</button>
+      <button id="btnBioInfo">Info</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="camera" data-group="Media">
+      <h2 class="panel-title"><span class="panel-name">Camera</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <button id="btnCameraInfo">Info</button>
+      <button id="btnTakePhoto">Photo</button>
+      <button id="btnPickGallery">Gallery</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="qr_scanner" data-group="Media">
+      <h2 class="panel-title"><span class="panel-name">QR / Barcode Scanner</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <button id="btnQrScan">Scan</button>
+      <button id="btnQrInfo">Info</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="audio" data-group="Media">
+      <h2 class="panel-title"><span class="panel-name">Audio</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <button id="btnAudioRecord">Start Record</button>
+      <button id="btnAudioStopRecord">Stop Record</button>
+      <button id="btnAudioPlay">Play Last</button>
+      <button id="btnAudioPause">Pause</button>
+      <button id="btnAudioResume">Resume</button>
+      <button id="btnAudioStop">Stop</button>
+      <button id="btnAudioInfo">Info</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="geolocation" data-group="Device">
+      <h2 class="panel-title"><span class="panel-name">Geolocation</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <button id="btnGeoPermission">Check Perm</button>
+      <button id="btnGeoRequestPermission">Request Perm</button>
+      <button id="btnGeoCurrent">Current Pos</button>
+      <button id="btnGeoStart">Watch</button>
+      <button id="btnGeoStop">Stop</button>
+      <button id="btnGeoEnabled">Enabled?</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="haptic" data-group="Device">
+      <h2 class="panel-title"><span class="panel-name">Haptic</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <button id="btnHapLight">Light</button>
+      <button id="btnHapMedium">Medium</button>
+      <button id="btnHapHeavy">Heavy</button>
+      <button id="btnHapClick">Click</button>
+      <button id="btnHapVibrate">Vibrate</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="sms_otp" data-group="Device">
+      <h2 class="panel-title"><span class="panel-name">SMS / OTP</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <button id="btnSmsSignature">App Signature</button>
+      <button id="btnSmsListen">Start Listen</button>
+      <button id="btnSmsStop">Stop Listen</button>
+      <button id="btnSmsLastCode">Last Code</button>
+      <button id="btnSmsHint">Request Hint</button>
+      <button id="btnSmsInfo">Info</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="contacts" data-group="Device">
+      <h2 class="panel-title"><span class="panel-name">Contacts</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <input id="contactQuery" value="" placeholder="search query" />
+    </div>
+    <div class="row">
+      <button id="btnContactCount">Count</button>
+      <button id="btnContactAll">Get All (10)</button>
+      <button id="btnContactSearch">Search</button>
+      <button id="btnContactPick">Pick Contact</button>
+      <button id="btnContactInfo">Info</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="phone_dialer" data-group="Device">
+      <h2 class="panel-title"><span class="panel-name">Phone Dialer</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <input id="phoneNumber" value="+989123456789" placeholder="phone number" />
+      <input id="emailTo" value="test@example.com" placeholder="email" />
+    </div>
+    <div class="row">
+      <button id="btnPhoneDial">Dial</button>
+      <button id="btnPhoneCall">Direct Call</button>
+      <button id="btnPhoneSms">SMS</button>
+      <button id="btnPhoneEmail">Email</button>
+      <button id="btnPhoneCanDial">Can Dial?</button>
+      <button id="btnPhoneInfo">Info</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="back_button" data-group="UI">
+      <h2 class="panel-title"><span class="panel-name">Back Button</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <button id="btnBackEnable">Intercept On</button>
+      <button id="btnBackDisable">Intercept Off</button>
+      <button id="btnBackState">State</button>
+      <button id="btnBackExitOnBack">Exit On Back</button>
+      <button id="btnBackMinimize">Minimize</button>
+      <button id="btnBackExit">Exit App</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="status_bar" data-group="UI">
+      <h2 class="panel-title"><span class="panel-name">Status Bar</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <button id="btnSbDark">Dark</button>
+      <button id="btnSbLight">Light</button>
+      <button id="btnSbHide">Hide</button>
+      <button id="btnSbShow">Show</button>
+      <button id="btnSbFullscreen">Fullscreen</button>
+      <button id="btnSbExitFs">Exit Fullscreen</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="safe_area" data-group="UI">
+      <h2 class="panel-title"><span class="panel-name">Safe Area</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <button id="btnSafeInsets">Insets</button>
+      <button id="btnSafeScreen">Screen Info</button>
+      <button id="btnSafeInfo">Info</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="orientation" data-group="UI">
+      <h2 class="panel-title"><span class="panel-name">Orientation</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <button id="btnOrPortrait">Portrait</button>
+      <button id="btnOrLandscape">Landscape</button>
+      <button id="btnOrUnlock">Unlock</button>
+      <button id="btnOrInfo">Info</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="keyboard" data-group="UI">
+      <h2 class="panel-title"><span class="panel-name">Keyboard</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <button id="btnKbState">State</button>
+      <button id="btnKbWatch">Watch</button>
+      <button id="btnKbStopWatch">Stop Watch</button>
+      <button id="btnKbHide">Hide</button>
+      <button id="btnKbInfo">Info</button>
+    </div>
+  
+      </div>
+    </section>
+    <section class="panel" data-plugin="toast" data-group="UI">
+      <h2 class="panel-title"><span class="panel-name">Toast</span><span class="badge" hidden></span></h2>
+      <div class="panel-body">
+    <div class="row">
+      <input id="toastText" value="Hello from Sweetmelon" placeholder="message" />
+    </div>
+    <div class="row">
+      <button id="btnToastShort">Short</button>
+      <button id="btnToastLong">Long</button>
+      <button id="btnToastTop">Top</button>
+      <button id="btnToastError">Error Style</button>
+      <button id="btnToastInfo">Info</button>
+    </div>
+  
+      </div>
+    </section>
+      <p class="empty" id="emptyState" hidden>No plugin matches your filter.</p>
+    </main>
+
+    <aside class="results" id="results">
+      <section class="panel results-panel">
+        <h2 class="panel-title"><span class="panel-name">Output</span></h2>
+        <pre id="output" class="output">{}</pre>
+      </section>
+      <section class="panel results-panel">
+        <h2 class="panel-title"><span class="panel-name">Event / Console Log</span></h2>
+        <div id="log" class="log"></div>
+      </section>
+    </aside>
+  </div>
+
+</div>
+
+<button class="fab" id="btnJumpResults" type="button" aria-label="Jump to output">Output ↓</button>
+
+<script src="js/native-sdk.js"></script>
+<script src="js/native-resilience.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

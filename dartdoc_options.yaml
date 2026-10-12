@@ -1,0 +1,22 @@
+dartdoc:
+  name: 'Sweetmelon'
+  description: 'Flutter Native Bridge API Reference'
+  
+  categories:
+    - name: Core
+      markdown: doc/categories/core.md
+    - name: Plugins
+      markdown: doc/categories/plugins.md
+    - name: Security
+      markdown: doc/categories/security.md
+  
+  categoryOrder:
+    - Core
+    - Plugins
+    - Security
+    
+  exclude:
+    - 'test/**'
+    - 'bin/**'
+    
+  showUndocumentedCategories: false

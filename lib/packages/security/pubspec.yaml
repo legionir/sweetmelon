@@ -1,0 +1,16 @@
+name: security
+description: Security module for Flutter Native Bridge
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  sweetmelon:
+    path: ../../..
+  flutter:
+    sdk: flutter
+  core:
+    path: ../core
+  permission_handler: ^11.3.0

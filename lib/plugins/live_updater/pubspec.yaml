@@ -1,0 +1,23 @@
+name: live_updater_plugin
+description: Live update plugin for www assets
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  sweetmelon:
+    path: ../../..
+  flutter:
+    sdk: flutter
+  plugin_engine:
+    path: ../../packages/plugin_engine
+  core:
+    path: ../../packages/core
+  http: ^1.1.2
+  path_provider: ^2.1.1
+  path: ^1.9.0
+  archive: ^3.6.1
+  crypto: ^3.0.5
+  shared_preferences: ^2.2.2

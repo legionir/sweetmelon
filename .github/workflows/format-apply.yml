@@ -1,0 +1,48 @@
+name: Apply dart format (manual)
+
+# Runs `dart format` on lib, test and integration_test in CI, where the Dart SDK
+# is installed, and commits the formatted files to the branch you pick. Use it
+# when the CI "dart format" check reports files that are not formatted.
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to commit the formatted files to'
+        required: true
+        default: 'main'
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  format-apply:
+    name: dart format and commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Format
+        run: dart format lib test integration_test
+
+      - name: Commit and push
+        run: |
+          if [ -z "$(git status --porcelain --untracked-files=no)" ]; then
+            echo "Nothing to format."
+            exit 0
+          fi
+          git status --short
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          git commit -m "style: dart format"
+          git push origin HEAD:"${{ inputs.branch }}"

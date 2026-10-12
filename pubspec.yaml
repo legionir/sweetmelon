@@ -1,0 +1,84 @@
+name: sweetmelon
+description: Flutter Native Bridge - JS to Native communication platform
+publish_to: 'none'
+
+version: 2.4.0+1
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Core
+  webview_flutter: ^4.8.0
+  webview_flutter_android: ^3.16.0
+  webview_flutter_wkwebview: ^3.13.0
+  shared_preferences: ^2.2.2
+  path_provider: ^2.1.1
+  path: ^1.9.0
+  uuid: ^4.2.1
+  get_it: ^7.6.4
+  image_picker: ^1.0.4
+  permission_handler: ^11.3.1
+  mime: ^1.0.5
+  crypto: ^3.0.5
+  # Icon generation for `sweetmelon icon` (lib/cli). The app does not import it.
+  image: ^4.2.0
+
+  # Connectivity & Device
+  connectivity_plus: ^6.0.5
+  device_info_plus: ^10.1.2
+  package_info_plus: ^8.0.2
+
+  # Demo plugins (http_native, download_manager, intent_link, phone_dialer,
+  # share, geolocation, notification, database)
+  http: ^1.1.2
+  app_links: ^6.3.2
+  url_launcher: ^6.3.0
+  share_plus: ^10.0.2
+  cross_file: ^0.3.4+2
+  geolocator: ^10.1.0
+  flutter_local_notifications: ^17.2.4
+  sqflite: ^2.3.3+2
+
+  # Security & Storage
+  flutter_secure_storage: ^9.2.2
+
+  # Media
+  file_picker: ^8.0.0+1
+  encrypt: ^5.0.3
+  pointycastle: ^3.9.1
+
+  # Firebase
+  firebase_core: ^3.6.0
+
+
+  # CLI tools (bin/)
+  yaml: ^3.1.2
+  args: ^2.4.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  # برای تست مسیر فعالِ پلاگین‌های Firebase: mockهای رسمی هسته و جایگزینی
+  # platform double برای کانال آنالیتیکس.
+  firebase_core_platform_interface: ^6.0.0
+  firebase_analytics_platform_interface: ^4.4.3
+
+
+flutter:
+  uses-material-design: true
+  # ورودی‌های دایرکتوری در Flutter فقط فایل‌های «مستقیمِ» همان پوشه را بسته‌بندی
+  # می‌کنند؛ زیرپوشه‌ها باید جداگانه فهرست شوند. بدون این دو ورودی،
+  # css/styles.css و js/*.js که در index.html ارجاع شده‌اند هرگز به باندل
+  # نمی‌رسند و سرور محلی به‌جای آن‌ها صفحهٔ ایندکس را برمی‌گرداند.
+  assets:
+    - assets/www/
+    - assets/www/css/
+    - assets/www/js/
+    - assets/www/img/

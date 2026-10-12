@@ -1,0 +1,21 @@
+name: core
+description: Core module for Flutter Native Bridge
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  sweetmelon:
+    path: ../../..
+  crypto: any
+  flutter:
+    sdk: flutter
+  webview_flutter: ^4.8.0
+  webview_flutter_android: ^3.16.0
+  image_picker: ^1.0.4
+  file_picker: ^8.0.0+1
+  uuid: ^4.2.1
+  path_provider: ^2.1.1
+  mime: ^1.0.5

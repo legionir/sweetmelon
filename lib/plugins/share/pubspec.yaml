@@ -1,0 +1,17 @@
+name: share_bridge_plugin
+description: Native share bridge plugin
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  sweetmelon:
+    path: ../../..
+  flutter:
+    sdk: flutter
+  plugin_engine:
+    path: ../../packages/plugin_engine
+  share_plus: ^10.0.2
+  cross_file: ^0.3.4+2

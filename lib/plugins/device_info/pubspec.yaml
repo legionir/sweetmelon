@@ -1,0 +1,17 @@
+name: device_info_bridge_plugin
+description: Device info and app info bridge plugin
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  sweetmelon:
+    path: ../../..
+  flutter:
+    sdk: flutter
+  plugin_engine:
+    path: ../../packages/plugin_engine
+  device_info_plus: ^10.1.2
+  package_info_plus: ^8.0.2

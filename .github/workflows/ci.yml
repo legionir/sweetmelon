@@ -1,0 +1,379 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'arena/**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze-and-test:
+    name: Analyze, unit, security and regression tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Show toolchain
+        run: flutter --version
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Static analysis (fatal on errors and warnings)
+        shell: bash
+        run: |
+          rc=0
+          flutter analyze --fatal-warnings > analyze.txt 2>&1 || rc=$?
+          cat analyze.txt
+          python3 .github/scripts/annotate_output.py analyze.txt
+          exit $rc
+
+      - name: Diagnostic (analyze)
+        if: failure()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/pr_diagnostic.sh "Analyze" analyze.txt
+
+      - name: Unit, security and regression tests with coverage
+        shell: bash
+        run: |
+          rc=0
+          mapfile -t test_targets < <(grep -v '^[[:space:]]*#' tool/sweetmelon_test_targets.txt | sed '/^[[:space:]]*$/d')
+          if [ "${#test_targets[@]}" -eq 0 ]; then
+            echo "No active test targets were generated." > unit.txt
+            cat unit.txt
+            exit 1
+          fi
+          flutter test --coverage --reporter expanded "${test_targets[@]}" > unit.txt 2>&1 || rc=$?
+          cat unit.txt
+          python3 .github/scripts/annotate_output.py unit.txt
+          exit $rc
+
+      - name: Diagnostic (tests)
+        if: failure()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            grep -n -A6 ' \[E\]' unit.txt
+            echo '----- exceptions -----'
+            grep -n -A22 'EXCEPTION CAUGHT' unit.txt
+            echo '----- summary -----'
+            grep -n 'Some tests failed\|All tests passed' unit.txt
+          } > test-failures.txt 2>&1 || true
+          bash .github/scripts/pr_diagnostic.sh "Unit tests" test-failures.txt unit.txt
+
+      - name: Coverage gate
+        shell: bash
+        run: |
+          python3 .github/scripts/coverage_gate.py coverage/lcov.info ${{ vars.COVERAGE_MIN || '55' }} '(^|/)(gen|generated)/|\.g\.dart$' > coverage-gate.txt 2>&1
+          rc=$?
+          cat coverage-gate.txt
+          exit $rc
+
+      - name: Coverage annotations (readable via check-run API)
+        if: always()
+        shell: bash
+        run: |
+          python3 .github/scripts/annotate_output.py coverage-gate.txt 20 || true
+
+      - name: Diagnostic (coverage)
+        if: failure()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/pr_diagnostic.sh "Coverage gate" coverage-gate.txt unit.txt
+
+      - name: Format check (dart format, fails on any unformatted file)
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/format_report.sh
+
+      - name: Format diagnostics (PR comment)
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/format_diagnostic.sh
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-lcov
+          path: coverage/lcov.info
+          if-no-files-found: warn
+
+  js-sdk-tests:
+    name: Injected JavaScript SDK (Node VM)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run SDK tests against the shipped template
+        run: node --test test/js/bridge_sdk.test.mjs
+
+  android-build:
+    name: Android build (debug and release)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Build debug APK
+        shell: bash
+        run: |
+          rc=0
+          flutter build apk --debug > debug-build.txt 2>&1 || rc=$?
+          cat debug-build.txt
+          python3 .github/scripts/annotate_output.py debug-build.txt
+          exit $rc
+
+      - name: "Build release APK (unsigned: no release keystore in CI)"
+        shell: bash
+        run: |
+          rc=0
+          flutter build apk --release > release-build.txt 2>&1 || rc=$?
+          cat release-build.txt
+          python3 .github/scripts/annotate_output.py release-build.txt
+          exit $rc
+
+      - name: Diagnostic (android build)
+        if: failure()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            grep -n -iE "error|fail|what went wrong|could not|exception|BUILD FAILED" debug-build.txt release-build.txt 2>/dev/null | head -120
+            echo "=== debug tail ==="
+            tail -c 3000 debug-build.txt 2>/dev/null
+            echo "=== release tail ==="
+            tail -c 3000 release-build.txt 2>/dev/null || true
+          } > android-diag.txt || true
+          bash .github/scripts/pr_diagnostic.sh "Android build" android-diag.txt
+
+  android-e2e:
+    name: Android end-to-end (emulator)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable KVM for emulator acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Inspect and prepare Android SDK (NDK)
+        shell: bash
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          ls "$ANDROID_SDK_ROOT/ndk" 2>&1 || echo "no ndk dir under ANDROID_SDK_ROOT"
+          ls "$ANDROID_HOME/ndk" 2>&1 || echo "no ndk dir under ANDROID_HOME"
+          SDKM="$(ls -d "$ANDROID_SDK_ROOT"/cmdline-tools/*/bin/sdkmanager 2>/dev/null | head -1)"
+          echo "sdkmanager=$SDKM"
+          if [ -n "$SDKM" ]; then
+            yes | "$SDKM" --licenses > /dev/null 2>&1 || true
+            "$SDKM" --install "ndk;28.2.13676358" > ndk-install.txt 2>&1 || true
+            tail -5 ndk-install.txt
+          fi
+
+      - name: Pre-build debug APK outside the emulator run
+        shell: bash
+        run: |
+          rc=0
+          flutter build apk --debug > e2e-prebuild.txt 2>&1 || rc=$?
+          cat e2e-prebuild.txt | tail -60
+          python3 .github/scripts/annotate_output.py e2e-prebuild.txt 40
+          exit $rc
+
+      - name: Diagnostic (e2e prebuild)
+        if: failure()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/pr_diagnostic.sh "Android e2e prebuild" e2e-prebuild.txt
+
+      - name: Run integration tests on an emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        timeout-minutes: 40
+        with:
+          api-level: 33
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -no-snapshot -gpu swiftshader_indirect -noaudio -no-boot-anim -memory 2048
+          script: bash .github/scripts/run_e2e.sh
+
+      - name: Collect E2E diagnostics
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for f in e2e.txt e2e.rc e2e-proc.log; do
+            if [ -f "$f" ]; then echo "== $f"; tail -80 "$f"; fi
+          done
+          [ -f e2e-proc.log ] && python3 .github/scripts/annotate_output.py e2e-proc.log 30 || true
+          [ -f e2e.rc ] && echo "::notice::e2e exit code file: $(cat e2e.rc)" || echo "::error::e2e.rc was not written"
+          [ -f e2e.txt ] && python3 .github/scripts/annotate_output.py e2e.txt 60 || true
+          bash .github/scripts/pr_diagnostic.sh "Android e2e" e2e.txt e2e-proc.log e2e-prebuild.txt || true
+
+  ios-build:
+    name: iOS build (macOS, no codesign)
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Check committed iOS project files
+        shell: bash
+        run: |
+          if [ ! -f ios/Podfile ] || [ ! -f ios/Runner.xcodeproj/project.pbxproj ]; then
+            echo "::error::ios/Podfile or Runner.xcodeproj is missing"
+            exit 1
+          fi
+          echo "::notice::iOS project files present"
+
+      - name: Keep CocoaPods integration (no Swift Package Manager migration)
+        run: flutter config --no-enable-swift-package-manager
+
+      - name: Enable permission_handler iOS permission macros
+        run: python3 .github/scripts/ios_permissions.py ios/Podfile
+
+      - name: Regenerate Flutter iOS config for this runner
+        run: flutter build ios --config-only --no-codesign
+
+      - name: Install CocoaPods dependencies
+        shell: bash
+        run: |
+          grep FLUTTER_ROOT ios/Flutter/Generated.xcconfig | sed 's/^/::notice::/'
+          cd ios
+          rc=0
+          pod install > ../pod-install.txt 2>&1 || rc=$?
+          tail -n 40 ../pod-install.txt | sed 's/^/::notice::pod: /'
+          exit $rc
+
+      - name: Build iOS app without codesigning
+        shell: bash
+        run: |
+          rc=0
+          flutter build ios --debug --no-codesign --simulator > ios-build.txt 2>&1 || rc=$?
+          if [ "$rc" != "0" ]; then
+            grep -n -i "error" ios-build.txt | head -40 | sed 's/^/::error::/'
+            tail -n 80 ios-build.txt | sed 's/^/::notice::/'
+          fi
+          exit $rc
+
+      - name: Diagnostic (iOS build)
+        if: failure()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            grep -n -iE "error:|error |BUILD FAILED|fatal|could not|failed to|phase script|CompileSwift|Ld /" ios-build.txt 2>/dev/null | head -120
+            echo "=== ios-build tail ==="
+            tail -c 5000 ios-build.txt 2>/dev/null || true
+          } > ios-diag.txt || true
+          bash .github/scripts/pr_diagnostic.sh "iOS build" ios-diag.txt pod-install.txt
+
+      - name: Upload iOS build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build-log
+          path: |
+            ios-build.txt
+            pod-install.txt
+          if-no-files-found: warn
+
+  core-tooling:
+    name: Core CLI (unit tests and sync check)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: CLI unit tests (lib/cli)
+        shell: bash
+        run: |
+          rc=0
+          flutter test test/unit/cli --reporter expanded > cli-tests.txt 2>&1 || rc=$?
+          cat cli-tests.txt
+          python3 .github/scripts/annotate_output.py cli-tests.txt 120
+          exit $rc
+
+      - name: Generated files match sweetmelon.yaml
+        shell: bash
+        run: |
+          rc=0
+          dart run bin/sweetmelon.dart sync --check > sync-check.txt 2>&1 || rc=$?
+          cat sync-check.txt
+          python3 .github/scripts/annotate_output.py sync-check.txt 60
+          exit $rc

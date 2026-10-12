@@ -1,0 +1,16 @@
+name: contacts_plugin
+description: Contacts read plugin
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  sweetmelon:
+    path: ../../..
+  flutter:
+    sdk: flutter
+  plugin_engine:
+    path: ../../packages/plugin_engine
+  flutter_contacts: ^1.1.9+2

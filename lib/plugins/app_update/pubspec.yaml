@@ -1,0 +1,20 @@
+name: app_update_plugin
+description: App version check and update plugin
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  sweetmelon:
+    path: ../../..
+  flutter:
+    sdk: flutter
+  plugin_engine:
+    path: ../../packages/plugin_engine
+  core:
+    path: ../../packages/core
+  package_info_plus: ^8.0.2
+  url_launcher: ^6.3.0
+  http: ^1.1.2

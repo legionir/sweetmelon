@@ -1,0 +1,16 @@
+name: storage_plugin
+description: Key-value storage plugin for Flutter Native Bridge
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  sweetmelon:
+    path: ../../..
+  flutter:
+    sdk: flutter
+  shared_preferences: ^2.2.2
+  plugin_engine:
+    path: ../../packages/plugin_engine

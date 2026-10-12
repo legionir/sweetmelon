@@ -1,0 +1,19 @@
+name: media_manager_plugin
+description: Gallery media manager plugin
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  sweetmelon:
+    path: ../../..
+  flutter:
+    sdk: flutter
+  plugin_engine:
+    path: ../../packages/plugin_engine
+  core:
+    path: ../../packages/core
+  image_gallery_saver_plus: ^5.0.0
+  path: ^1.9.0

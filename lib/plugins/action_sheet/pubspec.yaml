@@ -1,0 +1,17 @@
+name: action_sheet_plugin
+description: Bottom sheet action selector plugin
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  sweetmelon:
+    path: ../../..
+  flutter:
+    sdk: flutter
+  plugin_engine:
+    path: ../../packages/plugin_engine
+  qr_scanner:
+    path: ../qr_scanner

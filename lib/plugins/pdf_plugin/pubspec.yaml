@@ -1,0 +1,21 @@
+name: pdf_bridge_plugin
+description: PDF generate, view, print plugin
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  sweetmelon:
+    path: ../../..
+  flutter:
+    sdk: flutter
+  plugin_engine:
+    path: ../../packages/plugin_engine
+  core:
+    path: ../../packages/core
+  pdf: ^3.11.1
+  printing: ^5.13.3
+  path_provider: ^2.1.1
+  path: ^1.9.0

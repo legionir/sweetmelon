@@ -1,0 +1,19 @@
+name: oauth2_plugin
+description: Generic OAuth2 authentication plugin
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  sweetmelon:
+    path: ../../..
+  flutter:
+    sdk: flutter
+  plugin_engine:
+    path: ../../packages/plugin_engine
+  core:
+    path: ../../packages/core
+  flutter_inappwebview: ^6.1.5
+  http: ^1.1.2

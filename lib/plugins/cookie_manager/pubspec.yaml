@@ -1,0 +1,18 @@
+name: cookie_manager_plugin
+description: WebView cookie and session manager
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  sweetmelon:
+    path: ../../..
+  flutter:
+    sdk: flutter
+  plugin_engine:
+    path: ../../packages/plugin_engine
+  core:
+    path: ../../packages/core
+  webview_flutter: ^4.8.0

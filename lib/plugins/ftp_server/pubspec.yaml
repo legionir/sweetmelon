@@ -1,0 +1,16 @@
+name: ftp_server_plugin
+description: FTP server plugin
+version: 1.0.0
+publish_to: 'none'
+environment:
+  sdk: ^3.0.0
+dependencies:
+  sweetmelon:
+    path: ../../..
+  flutter:
+    sdk: flutter
+  plugin_engine:
+    path: ../../packages/plugin_engine
+  core:
+    path: ../../packages/core
+  path: ^1.9.0

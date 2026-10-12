@@ -1,0 +1,556 @@
+[
+  {
+    "kind": "eager",
+    "yamlKey": "permission",
+    "importPath": "plugins/permission/lib/permission_plugin.dart",
+    "code": "PermissionPlugin(permissionManager: sl<PermissionManager>())"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "app_lifecycle",
+    "importPath": "plugins/app_lifecycle/lib/app_lifecycle_plugin.dart",
+    "code": "AppLifecyclePlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "device_info",
+    "importPath": "plugins/device_info/lib/device_info_plugin.dart",
+    "code": "DeviceInfoBridgePlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "connectivity",
+    "importPath": "plugins/connectivity/lib/connectivity_plugin.dart",
+    "code": "ConnectivityBridgePlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "network_info",
+    "importPath": "plugins/network_info/lib/network_info_plugin.dart",
+    "code": "NetworkInfoPlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "storage",
+    "importPath": "plugins/storage/lib/storage_plugin.dart",
+    "code": "StoragePlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "file_system",
+    "importPath": "plugins/file_system/lib/file_system_plugin.dart",
+    "code": "FileSystemPlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "http_native",
+    "importPath": "plugins/http_native/lib/http_native_plugin.dart",
+    "code": "HttpNativePlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "intent_link",
+    "importPath": "plugins/intent_link/lib/intent_link_plugin.dart",
+    "code": "IntentLinkPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "clipboard",
+    "importPath": "plugins/clipboard/lib/clipboard_plugin.dart",
+    "code": "ClipboardPlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "share",
+    "importPath": "plugins/share/lib/share_plugin.dart",
+    "code": "ShareBridgePlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "back_button",
+    "importPath": "plugins/back_button/lib/back_button_plugin.dart",
+    "code": "BackButtonPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "status_bar",
+    "importPath": "plugins/status_bar/lib/status_bar_plugin.dart",
+    "code": "StatusBarPlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "orientation",
+    "importPath": "plugins/orientation/lib/orientation_plugin.dart",
+    "code": "OrientationPlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "haptic",
+    "importPath": "plugins/haptic/lib/haptic_plugin.dart",
+    "code": "HapticPlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "keyboard",
+    "importPath": "plugins/keyboard/lib/keyboard_plugin.dart",
+    "code": "KeyboardPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "encryption",
+    "importPath": "plugins/encryption/lib/encryption_plugin.dart",
+    "code": "EncryptionPlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "websocket",
+    "importPath": "plugins/websocket/lib/websocket_plugin.dart",
+    "code": "WebSocketPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "background_task",
+    "importPath": "plugins/background_task/lib/background_task_plugin.dart",
+    "code": "BackgroundTaskPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "dialog",
+    "importPath": "plugins/dialog/lib/dialog_plugin.dart",
+    "code": "DialogPlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "toast",
+    "importPath": "plugins/toast/lib/toast_plugin.dart",
+    "code": "ToastPlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "splash_screen",
+    "importPath": "plugins/splash_screen/lib/splash_screen_plugin.dart",
+    "code": "SplashScreenPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "push_notification",
+    "importPath": "plugins/push_notification/lib/push_notification_plugin.dart",
+    "code": "PushNotificationPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "wake_lock",
+    "importPath": "plugins/wake_lock/lib/wake_lock_plugin.dart",
+    "code": "WakeLockPlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "cookie_manager",
+    "importPath": "plugins/cookie_manager/lib/cookie_manager_plugin.dart",
+    "code": "CookieManagerPlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "cache_control",
+    "importPath": "plugins/cache_control/lib/cache_control_plugin.dart",
+    "code": "CacheControlPlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "app_update",
+    "importPath": "plugins/app_update/lib/app_update_plugin.dart",
+    "code": "AppUpdatePlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "file_picker",
+    "importPath": "plugins/file_picker/lib/file_picker_plugin.dart",
+    "code": "FilePickerPlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "file_opener",
+    "importPath": "plugins/file_opener/lib/file_opener_plugin.dart",
+    "code": "FileOpenerPlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "navigation_bar",
+    "importPath": "plugins/navigation_bar/lib/navigation_bar_plugin.dart",
+    "code": "NavigationBarPlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "privacy_screen",
+    "importPath": "plugins/privacy_screen/lib/privacy_screen_plugin.dart",
+    "code": "PrivacyScreenPlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "native_settings",
+    "importPath": "plugins/native_settings/lib/native_settings_plugin.dart",
+    "code": "NativeSettingsPlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "safe_area",
+    "importPath": "plugins/safe_area/lib/safe_area_plugin.dart",
+    "code": "SafeAreaPlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "date_picker",
+    "importPath": "plugins/date_picker/lib/date_picker_plugin.dart",
+    "code": "DatePickerPlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "action_sheet",
+    "importPath": "plugins/action_sheet/lib/action_sheet_plugin.dart",
+    "code": "ActionSheetPlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "text_zoom",
+    "importPath": "plugins/text_zoom/lib/text_zoom_plugin.dart",
+    "code": "TextZoomPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "accessibility",
+    "importPath": "plugins/accessibility/lib/accessibility_plugin.dart",
+    "code": "AccessibilityPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "firebase_analytics",
+    "importPath": "plugins/firebase_analytics/lib/firebase_analytics_plugin.dart",
+    "code": "FirebaseAnalyticsPlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "firebase_crashlytics",
+    "importPath": "plugins/firebase_crashlytics/lib/firebase_crashlytics_plugin.dart",
+    "code": "FirebaseCrashlyticsPlugin()"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "firebase_auth",
+    "importPath": "plugins/firebase_auth/lib/firebase_auth_plugin.dart",
+    "code": "FirebaseAuthPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "firebase_remote_config",
+    "importPath": "plugins/firebase_remote_config/lib/firebase_remote_config_plugin.dart",
+    "code": "FirebaseRemoteConfigPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "camera",
+    "yamlKey": "camera",
+    "importPath": "plugins/camera/lib/camera_plugin.dart",
+    "code": "CameraPlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "geolocation",
+    "yamlKey": "geolocation",
+    "importPath": "plugins/geolocation/lib/geolocation_plugin.dart",
+    "code": "GeolocationPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "secureStorage",
+    "yamlKey": "secure_storage",
+    "importPath": "plugins/secure_storage/lib/secure_storage_plugin.dart",
+    "code": "SecureStoragePlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "notification",
+    "yamlKey": "notification",
+    "importPath": "plugins/notification/lib/notification_plugin.dart",
+    "code": "NotificationPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "biometrics",
+    "yamlKey": "biometrics",
+    "importPath": "plugins/biometrics/lib/biometrics_plugin.dart",
+    "code": "BiometricsPlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "qrScanner",
+    "yamlKey": "qr_scanner",
+    "importPath": "plugins/qr_scanner/lib/qr_scanner_plugin.dart",
+    "code": "QrScannerPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "audio",
+    "yamlKey": "audio",
+    "importPath": "plugins/audio/lib/audio_plugin.dart",
+    "code": "AudioPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "smsOtp",
+    "yamlKey": "sms_otp",
+    "importPath": "plugins/sms_otp/lib/sms_otp_plugin.dart",
+    "code": "SmsOtpPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "downloadManager",
+    "yamlKey": "download_manager",
+    "importPath": "plugins/download_manager/lib/download_manager_plugin.dart",
+    "code": "DownloadManagerPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "database",
+    "yamlKey": "database",
+    "importPath": "plugins/database/lib/database_plugin.dart",
+    "code": "DatabasePlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "contacts",
+    "yamlKey": "contacts",
+    "importPath": "plugins/contacts/lib/contacts_plugin.dart",
+    "code": "ContactsPlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "phoneDialer",
+    "yamlKey": "phone_dialer",
+    "importPath": "plugins/phone_dialer/lib/phone_dialer_plugin.dart",
+    "code": "PhoneDialerPlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "bluetooth",
+    "yamlKey": "bluetooth",
+    "importPath": "plugins/bluetooth/lib/bluetooth_plugin.dart",
+    "code": "BluetoothPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "nfc",
+    "yamlKey": "nfc",
+    "importPath": "plugins/nfc/lib/nfc_plugin.dart",
+    "code": "NfcPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "speechToText",
+    "yamlKey": "speech_to_text",
+    "importPath": "plugins/speech_to_text/lib/speech_to_text_plugin.dart",
+    "code": "SpeechToTextPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "textToSpeech",
+    "yamlKey": "text_to_speech",
+    "importPath": "plugins/text_to_speech/lib/text_to_speech_plugin.dart",
+    "code": "TextToSpeechPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "videoPlayer",
+    "yamlKey": "video_player",
+    "importPath": "plugins/video_player/lib/video_player_plugin.dart",
+    "code": "VideoPlayerPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "inAppBrowser",
+    "yamlKey": "in_app_browser",
+    "importPath": "plugins/in_app_browser/lib/in_app_browser_plugin.dart",
+    "code": "InAppBrowserPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "pdf",
+    "yamlKey": "pdf_plugin",
+    "importPath": "plugins/pdf_plugin/lib/pdf_bridge_plugin.dart",
+    "code": "PdfBridgePlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "sensors",
+    "yamlKey": "sensors",
+    "importPath": "plugins/sensors/lib/sensors_plugin.dart",
+    "code": "SensorsPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "screenBrightness",
+    "yamlKey": "screen_brightness",
+    "importPath": "plugins/screen_brightness/lib/screen_brightness_plugin.dart",
+    "code": "ScreenBrightnessPlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "flashlight",
+    "yamlKey": "flashlight",
+    "importPath": "plugins/flashlight/lib/flashlight_plugin.dart",
+    "code": "FlashlightPlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "calendar",
+    "yamlKey": "calendar",
+    "importPath": "plugins/calendar/lib/calendar_plugin.dart",
+    "code": "CalendarPlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "badge",
+    "yamlKey": "badge",
+    "importPath": "plugins/badge/lib/badge_plugin.dart",
+    "code": "BadgePlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "foregroundService",
+    "yamlKey": "foreground_service",
+    "importPath": "plugins/foreground_service/lib/foreground_service_plugin.dart",
+    "code": "ForegroundServicePlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "backgroundGeolocation",
+    "yamlKey": "background_geolocation",
+    "importPath": "plugins/background_geolocation/lib/background_geolocation_plugin.dart",
+    "code": "BackgroundGeolocationPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "mediaManager",
+    "yamlKey": "media_manager",
+    "importPath": "plugins/media_manager/lib/media_manager_plugin.dart",
+    "code": "MediaManagerPlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "fileCompressor",
+    "yamlKey": "file_compressor",
+    "importPath": "plugins/file_compressor/lib/file_compressor_plugin.dart",
+    "code": "FileCompressorPlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "zip",
+    "yamlKey": "zip",
+    "importPath": "plugins/zip/lib/zip_plugin.dart",
+    "code": "ZipPlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "shareTarget",
+    "yamlKey": "share_target",
+    "importPath": "plugins/share_target/lib/share_target_plugin.dart",
+    "code": "ShareTargetPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "inAppReview",
+    "yamlKey": "in_app_review",
+    "importPath": "plugins/in_app_review/lib/in_app_review_plugin.dart",
+    "code": "InAppReviewPlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "nativeMarket",
+    "yamlKey": "native_market",
+    "importPath": "plugins/native_market/lib/native_market_plugin.dart",
+    "code": "NativeMarketPlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "screenshot",
+    "yamlKey": "screenshot",
+    "importPath": "plugins/screenshot/lib/screenshot_plugin.dart",
+    "code": "ScreenshotPlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "wifiManager",
+    "yamlKey": "wifi_manager",
+    "importPath": "plugins/wifi_manager/lib/wifi_manager_plugin.dart",
+    "code": "WifiManagerPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "rootDetection",
+    "yamlKey": "root_detection",
+    "importPath": "plugins/root_detection/lib/root_detection_plugin.dart",
+    "code": "RootDetectionPlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "appIntegrity",
+    "yamlKey": "app_integrity",
+    "importPath": "plugins/app_integrity/lib/app_integrity_plugin.dart",
+    "code": "AppIntegrityPlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "alarm",
+    "yamlKey": "alarm",
+    "importPath": "plugins/alarm/lib/alarm_plugin.dart",
+    "code": "AlarmPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "pedometer",
+    "yamlKey": "pedometer",
+    "importPath": "plugins/pedometer/lib/pedometer_plugin.dart",
+    "code": "PedometerPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "shakeDetection",
+    "yamlKey": "shake_detection",
+    "importPath": "plugins/shake_detection/lib/shake_detection_plugin.dart",
+    "code": "ShakeDetectionPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "volumeButtons",
+    "yamlKey": "volume_buttons",
+    "importPath": "plugins/volume_buttons/lib/volume_buttons_plugin.dart",
+    "code": "VolumeButtonsPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "simInfo",
+    "yamlKey": "sim_info",
+    "importPath": "plugins/sim_info/lib/sim_info_plugin.dart",
+    "code": "SimInfoPlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "kioskMode",
+    "yamlKey": "kiosk_mode",
+    "importPath": "plugins/kiosk_mode/lib/kiosk_mode_plugin.dart",
+    "code": "KioskModePlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "intentLauncher",
+    "yamlKey": "intent_launcher",
+    "importPath": "plugins/intent_launcher/lib/intent_launcher_plugin.dart",
+    "code": "IntentLauncherPlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "emailComposer",
+    "yamlKey": "email_composer",
+    "importPath": "plugins/email_composer/lib/email_composer_plugin.dart",
+    "code": "EmailComposerPlugin()"
+  }
+]

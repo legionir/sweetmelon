@@ -1,0 +1,19 @@
+name: plugin_engine
+description: Plugin engine for Flutter Native Bridge
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  sweetmelon:
+    path: ../../..
+  flutter:
+    sdk: flutter
+  core:
+    path: ../core
+  security:
+    path: ../security
+  performance:
+    path: ../performance

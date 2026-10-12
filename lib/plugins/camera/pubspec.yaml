@@ -1,0 +1,17 @@
+name: camera_plugin
+description: Camera plugin for Flutter Native Bridge
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  sweetmelon:
+    path: ../../..
+  flutter:
+    sdk: flutter
+  image_picker: ^1.0.4
+  permission_handler: ^11.3.1
+  plugin_engine:
+    path: ../../packages/plugin_engine

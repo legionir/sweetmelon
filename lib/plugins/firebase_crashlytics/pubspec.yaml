@@ -1,0 +1,16 @@
+name: firebase_crashlytics_plugin
+description: Firebase Crashlytics bridge plugin
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  sweetmelon:
+    path: ../../..
+  flutter:
+    sdk: flutter
+  plugin_engine:
+    path: ../../packages/plugin_engine
+  firebase_crashlytics: ^4.1.3

@@ -1,0 +1,134 @@
+# This file configures the analyzer, which statically analyzes Dart code to
+# check for errors, warnings, and lints.
+#
+# The issues identified by the analyzer are surfaced in the UI of Dart-enabled
+# IDEs (https://dart.dev/tools#ides-and-editors). The analyzer can also be
+# invoked from the command line by running `flutter analyze`.
+
+# The following line activates a set of recommended lints for Flutter apps,
+# packages, and plugins designed to encourage good coding practices.
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    # <sweetmelon:disabled-plugin-sources>
+    # Plugin source is retained but not part of this configured build.
+    - lib/plugins/accessibility/**
+    - lib/plugins/action_sheet/**
+    - lib/plugins/alarm/**
+    - lib/plugins/app_integrity/**
+    - lib/plugins/app_update/**
+    - lib/plugins/audio/**
+    - lib/plugins/background_geolocation/**
+    - lib/plugins/background_task/**
+    - lib/plugins/badge/**
+    - lib/plugins/biometrics/**
+    - lib/plugins/bluetooth/**
+    - lib/plugins/cache_control/**
+    - lib/plugins/calendar/**
+    - lib/plugins/camera_preview/**
+    - lib/plugins/contacts/**
+    - lib/plugins/cookie_manager/**
+    - lib/plugins/date_picker/**
+    - lib/plugins/dialog/**
+    - lib/plugins/document_scanner/**
+    - lib/plugins/email_composer/**
+    - lib/plugins/file_compressor/**
+    - lib/plugins/file_opener/**
+    - lib/plugins/firebase_analytics/**
+    - lib/plugins/firebase_auth/**
+    - lib/plugins/firebase_crashlytics/**
+    - lib/plugins/firebase_remote_config/**
+    - lib/plugins/flashlight/**
+    - lib/plugins/foreground_service/**
+    - lib/plugins/ftp_client/**
+    - lib/plugins/ftp_server/**
+    - lib/plugins/google_maps/**
+    - lib/plugins/http_server/**
+    - lib/plugins/in_app_browser/**
+    - lib/plugins/in_app_purchase/**
+    - lib/plugins/in_app_review/**
+    - lib/plugins/intent_launcher/**
+    - lib/plugins/kiosk_mode/**
+    - lib/plugins/live_updater/**
+    - lib/plugins/loader_status/**
+    - lib/plugins/media_manager/**
+    - lib/plugins/native_market/**
+    - lib/plugins/native_settings/**
+    - lib/plugins/navigation_bar/**
+    - lib/plugins/nfc/**
+    - lib/plugins/oauth2/**
+    - lib/plugins/pdf_plugin/**
+    - lib/plugins/pedometer/**
+    - lib/plugins/ping_dns/**
+    - lib/plugins/privacy_screen/**
+    - lib/plugins/push_notification/**
+    - lib/plugins/qr_scanner/**
+    - lib/plugins/root_detection/**
+    - lib/plugins/screen_brightness/**
+    - lib/plugins/screenshot/**
+    - lib/plugins/sensors/**
+    - lib/plugins/shake_detection/**
+    - lib/plugins/share_target/**
+    - lib/plugins/sim_info/**
+    - lib/plugins/sms_otp/**
+    - lib/plugins/social_login/**
+    - lib/plugins/socket/**
+    - lib/plugins/speech_to_text/**
+    - lib/plugins/splash_screen/**
+    - lib/plugins/ssh_client/**
+    - lib/plugins/ssh_server/**
+    - lib/plugins/tcp_server/**
+    - lib/plugins/text_to_speech/**
+    - lib/plugins/text_zoom/**
+    - lib/plugins/udp_server/**
+    - lib/plugins/video_player/**
+    - lib/plugins/volume_buttons/**
+    - lib/plugins/wake_lock/**
+    - lib/plugins/websocket/**
+    - lib/plugins/websocket_server/**
+    - lib/plugins/wifi_advanced/**
+    - lib/plugins/wifi_manager/**
+    - lib/plugins/zip/**
+
+    # Tests for disabled plugins are selected out by the generated test manifest.
+    - test/plugins/app_update_plugin_test.dart
+    - test/plugins/background_task_plugin_test.dart
+    - test/plugins/cache_control_plugin_test.dart
+    - test/plugins/cookie_manager_plugin_test.dart
+    - test/plugins/dialog_plugin_test.dart
+    - test/plugins/event_plugins_test.dart
+    - test/plugins/firebase_analytics_active_test.dart
+    - test/plugins/firebase_analytics_calls_test.dart
+    - test/plugins/firebase_analytics_test.dart
+    - test/plugins/firebase_auth_calls_test.dart
+    - test/plugins/firebase_auth_test.dart
+    - test/plugins/firebase_remote_config_calls_test.dart
+    - test/plugins/firebase_remote_config_test.dart
+    - test/plugins/push_notification_plugin_test.dart
+    - test/plugins/qr_scanner_plugin_test.dart
+    - test/plugins/security_plugins_test.dart
+    - test/plugins/websocket_plugin_test.dart
+    # </sweetmelon:disabled-plugin-sources>
+
+    # Flutter tooling may extend this unmanaged tail during dependency resolution.
+    - build/**
+    - android/**
+
+linter:
+  # The lint rules applied to this project can be customized in the
+  # section below to disable rules from the `package:flutter_lints/flutter.yaml`
+  # included above or to enable additional rules. A list of all available lints
+  # and their documentation is published at https://dart.dev/lints.
+  #
+  # Instead of disabling a lint rule for the entire project in the
+  # section below, it can also be suppressed for a single line of code
+  # or a specific dart file by using the `// ignore: name_of_lint` and
+  # `// ignore_for_file: name_of_lint` syntax on the line or in the file
+  # producing the lint.
+  rules:
+    # avoid_print: false  # Uncomment to disable the `avoid_print` rule
+    # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
+
+# Additional information about this file can be found at
+# https://dart.dev/guides/language/analysis-options

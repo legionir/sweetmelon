@@ -1,0 +1,55 @@
+name: Sync generated files (manual)
+
+# Runs `sweetmelon sync --apply` in CI, where Flutter is installed, and commits
+# the result to the branch you pick. Use it when `sync --check` reports that
+# pubspec.yaml, service_locator.dart, analyzer exclusions, test targets, the
+# Android manifest, Info.plist or web files are out of date compared with
+# sweetmelon.yaml.
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to commit the synced files to'
+        required: true
+        default: 'main'
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  sync-apply:
+    name: sync --apply and commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Apply sync
+        run: dart run bin/sweetmelon.dart sync --apply
+
+      - name: Show changes
+        run: git status --short
+
+      - name: Commit and push
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "Nothing to commit: files already match sweetmelon.yaml."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          git commit -m "chore: sync generated project files with sweetmelon.yaml"
+          git push origin HEAD:"${{ inputs.branch }}"
