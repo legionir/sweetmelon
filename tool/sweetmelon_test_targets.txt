@@ -11,8 +11,10 @@ test/plugins/toast_plugin_widget_test.dart
 test/unit/camera_validation_test.dart
 test/unit/cli/config_validator_test.dart
 test/unit/cli/icon_generator_test.dart
+test/unit/cli/native_requirements_test.dart
 test/unit/cli/package_rename_test.dart
 test/unit/cli/project_doctor_test.dart
+test/unit/cli/pubspec_add_test.dart
 test/unit/cli/safe_writer_test.dart
 test/unit/cli/service_locator_golden_test.dart
 test/unit/cli/sync_logic_test.dart

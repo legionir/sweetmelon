@@ -552,5 +552,137 @@
     "yamlKey": "email_composer",
     "importPath": "plugins/email_composer/lib/email_composer_plugin.dart",
     "code": "EmailComposerPlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "cameraPreview",
+    "yamlKey": "camera_preview",
+    "importPath": "plugins/camera_preview/lib/camera_preview_plugin.dart",
+    "code": "CameraPreviewPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "documentScanner",
+    "yamlKey": "document_scanner",
+    "importPath": "plugins/document_scanner/lib/document_scanner_plugin.dart",
+    "code": "DocumentScannerPlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "ftpClient",
+    "yamlKey": "ftp_client",
+    "importPath": "plugins/ftp_client/lib/ftp_client_plugin.dart",
+    "code": "FtpClientPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "ftpServer",
+    "yamlKey": "ftp_server",
+    "importPath": "plugins/ftp_server/lib/ftp_server_plugin.dart",
+    "code": "FtpServerPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "googleMaps",
+    "yamlKey": "google_maps",
+    "importPath": "plugins/google_maps/lib/google_maps_plugin.dart",
+    "code": "GoogleMapsPlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "httpServer",
+    "yamlKey": "http_server",
+    "importPath": "plugins/http_server/lib/http_server_plugin.dart",
+    "code": "HttpServerPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "inAppPurchase",
+    "yamlKey": "in_app_purchase",
+    "importPath": "plugins/in_app_purchase/lib/in_app_purchase_plugin.dart",
+    "code": "InAppPurchasePlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "liveUpdater",
+    "yamlKey": "live_updater",
+    "importPath": "plugins/live_updater/lib/live_updater_plugin.dart",
+    "code": "LiveUpdaterPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "oauth2",
+    "yamlKey": "oauth2",
+    "importPath": "plugins/oauth2/lib/oauth2_plugin.dart",
+    "code": "OAuth2Plugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "pingDns",
+    "yamlKey": "ping_dns",
+    "importPath": "plugins/ping_dns/lib/ping_dns_plugin.dart",
+    "code": "PingDnsPlugin()"
+  },
+  {
+    "kind": "lazy",
+    "id": "socialLogin",
+    "yamlKey": "social_login",
+    "importPath": "plugins/social_login/lib/social_login_plugin.dart",
+    "code": "SocialLoginPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "socket",
+    "yamlKey": "socket",
+    "importPath": "plugins/socket/lib/socket_plugin.dart",
+    "code": "SocketPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "sshClient",
+    "yamlKey": "ssh_client",
+    "importPath": "plugins/ssh_client/lib/ssh_client_plugin.dart",
+    "code": "SshClientPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "sshServer",
+    "yamlKey": "ssh_server",
+    "importPath": "plugins/ssh_server/lib/ssh_server_plugin.dart",
+    "code": "SshServerPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "tcpServer",
+    "yamlKey": "tcp_server",
+    "importPath": "plugins/tcp_server/lib/tcp_server_plugin.dart",
+    "code": "TcpServerPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "udpServer",
+    "yamlKey": "udp_server",
+    "importPath": "plugins/udp_server/lib/udp_server_plugin.dart",
+    "code": "UdpServerPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "websocketServer",
+    "yamlKey": "websocket_server",
+    "importPath": "plugins/websocket_server/lib/websocket_server_plugin.dart",
+    "code": "WebSocketServerPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "wifiAdvanced",
+    "yamlKey": "wifi_advanced",
+    "importPath": "plugins/wifi_advanced/lib/wifi_advanced_plugin.dart",
+    "code": "WifiAdvancedPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "eager",
+    "yamlKey": "loader_status",
+    "importPath": "plugins/loader_status/lib/loader_status_plugin.dart",
+    "code": "LoaderStatusPlugin(loader: sl<LazyPluginLoader>())"
   }
 ]

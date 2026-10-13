@@ -30,7 +30,7 @@ dart run bin/sweetmelon.dart sync --check    # exit 1 when files are out of date
 
 - registers only the enabled plugins in `lib/di/service_locator.dart`;
 - **adds** the pubspec dependencies of enabled plugins that are not declared yet (plain version constraints from the plugin's own `pubspec.yaml`; entries you already have are never changed) and **removes** the unused ones of disabled plugins;
-- adds or removes the Android permissions and iOS usage descriptions each plugin needs;
+- adds or removes the Android permissions, Android features and iOS usage descriptions each plugin needs (every plugin has an entry; manifest components such as intent filters and services, and non-string `Info.plist` values such as `UIBackgroundModes`, are not managed);
 - keeps the analyzer exclusions and the list of test targets in step with the disabled plugins;
 - sets the app name and the web titles from `project.display_name`, and the version name from `project.version`.
 

@@ -8,7 +8,7 @@ import 'analysis_excludes.dart';
 import 'native_sync.dart';
 import 'plugin_catalog.dart';
 import 'plugin_closure.dart';
-import 'plugin_registry_data.dart';
+import 'plugin_native_requirements.dart';
 import 'project_settings.dart';
 import 'pubspec_sync.dart';
 import 'safe_writer.dart';
@@ -192,20 +192,29 @@ class SyncRunner {
       // Packages of enabled plugins that the pubspec does not declare yet,
       // for example after `sweetmelon plugin enable <plugin>`.
       final wanted = <String, String>{};
+      final conflicts = <String, Set<String>>{};
       for (final dir in (closure.activeDirs.toList()..sort())) {
+        // Path dependencies on other plugins are not in this map, only
+        // packages with a plain version constraint. A package can share its
+        // name with a plugin directory (screen_brightness, video_player, ...).
         pluginConstraints[dir]?.forEach((name, constraint) {
-          if (pluginDeps.containsKey(name)) return; // local plugin
           final existing = wanted[name];
           if (existing == null) {
             wanted[name] = constraint;
           } else if (existing != constraint) {
-            warnings.add('plugins ask for different versions of $name '
-                '($existing and $constraint); using $existing');
+            conflicts.putIfAbsent(name, () => {existing}).add(constraint);
           }
         });
       }
       final addition = addMissingDependencies(text, wanted: wanted);
       text = addition.text;
+      for (final name in addition.added) {
+        final versions = conflicts[name];
+        if (versions != null) {
+          warnings.add('plugins ask for different versions of $name '
+              '(${versions.join(' and ')}); using ${wanted[name]}');
+        }
+      }
 
       final changesSummary = [
         if (addition.added.isNotEmpty) '+${addition.added.join(', ')}',
@@ -227,7 +236,7 @@ class SyncRunner {
       _record(changes, _pubspec, text, original);
     }
 
-    const registry = PluginRegistryData.allPlugins;
+    final registry = allNativeRequirements();
 
     // Android permissions
     final androidManaged = <String>{
@@ -277,12 +286,12 @@ class SyncRunner {
 
     // iOS usage descriptions
     final iosManaged = <String>{
-      for (final plugin in registry) ...plugin.iosPermissions.keys,
+      for (final plugin in registry) ...plugin.iosUsageDescriptions.keys,
     };
     final iosDesired = <String, String>{};
     for (final plugin in registry) {
       if (!isActive(plugin.id)) continue;
-      plugin.iosPermissions.forEach((key, text) {
+      plugin.iosUsageDescriptions.forEach((key, text) {
         iosDesired.putIfAbsent(key, () => text);
       });
     }
