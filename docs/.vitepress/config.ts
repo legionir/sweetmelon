@@ -71,6 +71,7 @@ export default defineConfig({
             { text: 'Installation', link: '/guide/installation' },
             { text: 'Configuration', link: '/guide/configuration' },
             { text: 'Versioning', link: '/guide/versioning' },
+            { text: 'Build from a web folder', link: '/guide/build-from-web' },
             { text: 'Project Structure', link: '/guide/project-structure' },
             { text: 'How It Works', link: '/guide/how-it-works' },
           ],
