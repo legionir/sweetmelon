@@ -11,6 +11,14 @@ pins a core release in `sweetmelon.yaml` (`core: "2.4"`).
 
 Fixes for an older minor are made on its `release/x.y` branch and tagged there.
 
+## [2.4.1]
+
+### Fixed
+- The workflow that `sweetmelon init` writes (and the `app-template` example)
+  no longer passes `icon: icon.png`. `init` creates no icon file, so every
+  build of a new app stopped with "Icon icon.png not found". The `icon` input
+  is optional; add it back when the app has an icon.
+
 ## [2.4.0]
 
 First versioned release.

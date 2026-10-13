@@ -63,5 +63,5 @@ jobs:
           dart run bin/sweetmelon.dart detect --www "$APP/www" --strict | tee detect.txt
           grep -q "storage" detect.txt && grep -q "toast" detect.txt
           cd "$APP"
-          dart run "$GITHUB_WORKSPACE/bin/sweetmelon.dart" upgrade --to 2.4.1 --apply
-          grep -q "sweetmelon@v2.4.1" .github/workflows/build.yml
+          dart run "$GITHUB_WORKSPACE/bin/sweetmelon.dart" upgrade --to 2.4.2 --apply
+          grep -q "sweetmelon@v2.4.2" .github/workflows/build.yml
