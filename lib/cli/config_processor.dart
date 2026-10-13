@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:yaml/yaml.dart';
 
+import 'package_rename.dart';
 import 'plugin_catalog.dart';
 import 'plugin_registry_data.dart';
 import 'safe_writer.dart';
@@ -109,6 +110,8 @@ class ConfigProcessor {
       before,
       catalog.entries,
       enabledKeys: enabledKeys,
+      packageName: readPubspecName(await File('pubspec.yaml').readAsString()) ??
+          defaultPackageName,
     );
     writer.replace(serviceLocatorPath, after);
     print('✅ service_locator.dart: ${enabledKeys.length} of '

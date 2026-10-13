@@ -10,6 +10,7 @@ import 'plugin_catalog.dart';
 import 'project_doctor.dart';
 import 'project_settings.dart';
 import 'safe_writer.dart';
+import 'service_locator_gen.dart';
 import 'sync_runner.dart';
 import 'version_bump.dart';
 
@@ -385,12 +386,14 @@ class DoctorRunner {
       p.join(root, pluginCatalogFile),
     );
     final locator = await read('lib/di/service_locator.dart');
+    final packageName =
+        readPubspecName(await read(pubspecYaml) ?? '') ?? defaultPackageName;
     final registeredPluginKeys = catalog == null || locator == null
         ? null
         : {
             for (final entry in catalog.entries)
-              if (locator
-                  .contains("import 'package:sweetmelon/${entry.importPath}';"))
+              if (locator.contains(
+                  "import 'package:$packageName/${entry.importPath}';"))
                 entry.yamlKey,
           };
     SyncPlan? plan;

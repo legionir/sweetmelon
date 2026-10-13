@@ -1,0 +1,205 @@
+name: Sweetmelon build
+description: >
+  Builds an Android APK / AAB or an unsigned iOS app from a web app (HTML/JS)
+  with the Sweetmelon core release this action is pinned to
+  (uses: legionir/sweetmelon@v2.4.0). Plugins, permissions, package name,
+  Dart package, app name and icon follow sweetmelon.yaml.
+author: legionir
+
+branding:
+  icon: package
+  color: green
+
+inputs:
+  target:
+    description: 'What to build: apk, aab or ios (ios needs a macOS runner).'
+    default: apk
+  www:
+    description: Folder of your web app (must contain index.html).
+    default: www
+  config:
+    description: Your sweetmelon.yaml (core version, project, plugin_selection).
+    default: sweetmelon.yaml
+  package_name:
+    description: Android package name / iOS bundle id. Empty keeps the config.
+    default: ''
+  dart_package:
+    description: Dart package name. Empty keeps the config.
+    default: ''
+  app_name:
+    description: Name shown under the icon. Empty keeps the config.
+    default: ''
+  icon:
+    description: Square PNG (1024 px or more) in your repository. Empty keeps the config.
+    default: ''
+  strict:
+    description: 'true: fail when a bridge call cannot be resolved to a plugin.'
+    default: 'false'
+  flutter_version:
+    description: Flutter version (empty = latest stable).
+    default: ''
+  keystore_base64:
+    description: Base64 of your release keystore (use a secret). Empty = throw-away key.
+    default: ''
+  keystore_password:
+    description: Keystore password (use a secret).
+    default: ''
+  key_alias:
+    description: Key alias in your keystore.
+    default: ''
+  key_password:
+    description: Key password (use a secret). Empty = keystore password.
+    default: ''
+  artifact_name:
+    description: Name of the uploaded artifact. Empty = sweetmelon-<target>.
+    default: ''
+
+outputs:
+  file:
+    description: Path of the built file.
+    value: ${{ steps.result.outputs.file }}
+  package:
+    description: Android package name of the built APK (empty for other targets).
+    value: ${{ steps.result.outputs.package }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Java
+      if: ${{ inputs.target != 'ios' }}
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: stable
+        flutter-version: ${{ inputs.flutter_version }}
+        cache: true
+
+    # The action checkout is the core at the pinned release. Build in a copy
+    # so the caller's workspace is left alone.
+    - name: Stage the core and your files
+      shell: bash
+      env:
+        IN_WWW: ${{ inputs.www }}
+        IN_CONFIG: ${{ inputs.config }}
+        IN_ICON: ${{ inputs.icon }}
+      run: |
+        set -euo pipefail
+        APP="$RUNNER_TEMP/sweetmelon-app"
+        rm -rf "$APP"
+        mkdir -p "$APP"
+        tar -C "$GITHUB_ACTION_PATH" --exclude=.git --exclude=docs --exclude=build \
+          --exclude=.dart_tool --exclude=node_modules -cf - . | tar -C "$APP" -xf -
+        echo "SWEETMELON_APP=$APP" >> "$GITHUB_ENV"
+
+        [ -f "$GITHUB_WORKSPACE/$IN_CONFIG" ] || { echo "::error::$IN_CONFIG not found in your repository"; exit 1; }
+        [ -f "$GITHUB_WORKSPACE/$IN_WWW/index.html" ] || { echo "::error::$IN_WWW/index.html not found in your repository"; exit 1; }
+        cp "$GITHUB_WORKSPACE/$IN_CONFIG" "$APP/sweetmelon.yaml"
+        echo "WWW_ABS=$GITHUB_WORKSPACE/$IN_WWW" >> "$GITHUB_ENV"
+        if [ -n "$IN_ICON" ]; then
+          [ -f "$GITHUB_WORKSPACE/$IN_ICON" ] || { echo "::error::Icon $IN_ICON not found"; exit 1; }
+          mkdir -p "$APP/$(dirname "$IN_ICON")"
+          cp "$GITHUB_WORKSPACE/$IN_ICON" "$APP/$IN_ICON"
+        fi
+
+    - name: Prepare (package names, plugins, permissions)
+      shell: bash
+      env:
+        IN_PACKAGE_NAME: ${{ inputs.package_name }}
+        IN_DART_PACKAGE: ${{ inputs.dart_package }}
+        IN_APP_NAME: ${{ inputs.app_name }}
+        IN_ICON: ${{ inputs.icon }}
+        IN_STRICT: ${{ inputs.strict }}
+      run: |
+        cd "$SWEETMELON_APP"
+        IN_WWW="$WWW_ABS" tool/ci/prepare.sh
+
+    - name: Set up signing
+      if: ${{ inputs.target != 'ios' }}
+      shell: bash
+      env:
+        KS_B64: ${{ inputs.keystore_base64 }}
+        KS_PASS: ${{ inputs.keystore_password }}
+        KS_ALIAS: ${{ inputs.key_alias }}
+        KS_KEY_PASS: ${{ inputs.key_password }}
+      run: |
+        set -euo pipefail
+        cd "$SWEETMELON_APP"
+        if [ -n "$KS_B64" ]; then
+          [ -n "$KS_PASS" ] && [ -n "$KS_ALIAS" ] || { echo "::error::keystore_password and key_alias are required with keystore_base64"; exit 1; }
+          echo "$KS_B64" | base64 -d > android/app/release.jks
+          ALIAS="$KS_ALIAS"; PASS="$KS_PASS"; KEYPASS="${KS_KEY_PASS:-$KS_PASS}"
+          echo "Signing with your keystore"
+        else
+          PASS="$(openssl rand -hex 16)"; KEYPASS="$PASS"; ALIAS=sweetmelon
+          echo "::add-mask::$PASS"
+          keytool -genkey -keystore android/app/release.jks -storepass "$PASS" \
+            -alias "$ALIAS" -keypass "$PASS" -keyalg RSA -keysize 2048 -validity 10000 \
+            -dname "CN=Sweetmelon, OU=Mobile, O=Sweetmelon, L=Global, S=Global, C=US"
+          echo "::warning::No keystore given: signed with a throw-away key. Updates will not install over this build and Google Play will reject it."
+        fi
+        echo "::add-mask::$PASS"
+        echo "::add-mask::$KEYPASS"
+        {
+          echo "SWEETMELON_KEYSTORE_PATH=release.jks"
+          echo "SWEETMELON_KEYSTORE_PASSWORD=$PASS"
+          echo "SWEETMELON_KEY_ALIAS=$ALIAS"
+          echo "SWEETMELON_KEY_PASSWORD=$KEYPASS"
+        } >> "$GITHUB_ENV"
+
+    - name: Build
+      id: build
+      shell: bash
+      env:
+        TARGET: ${{ inputs.target }}
+      run: |
+        set -euo pipefail
+        cd "$SWEETMELON_APP"
+        case "$TARGET" in
+          apk)
+            flutter build apk --release --target-platform android-arm,android-arm64
+            echo "file=build/app/outputs/flutter-apk/app-release.apk" >> "$GITHUB_OUTPUT" ;;
+          aab)
+            flutter build appbundle --release
+            echo "file=build/app/outputs/bundle/release/app-release.aab" >> "$GITHUB_OUTPUT" ;;
+          ios)
+            flutter build ios --release --no-codesign
+            (cd build/ios/iphoneos && ditto -c -k --sequesterRsrc --keepParent Runner.app "$PWD/../../../Runner-app.zip")
+            echo "file=Runner-app.zip" >> "$GITHUB_OUTPUT" ;;
+          *) echo "::error::target must be apk, aab or ios"; exit 1 ;;
+        esac
+
+    - name: Result
+      id: result
+      shell: bash
+      env:
+        TARGET: ${{ inputs.target }}
+        FILE: ${{ steps.build.outputs.file }}
+        WANT: ${{ inputs.package_name }}
+      run: |
+        set -euo pipefail
+        cd "$SWEETMELON_APP"
+        PKG=""
+        if [ "$TARGET" = apk ]; then
+          AAPT="$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)"
+          PKG="$("$AAPT" dump packagename "$FILE")"
+          echo "APK package: $PKG"
+          if [ -n "$WANT" ] && [ "$PKG" != "$WANT" ]; then
+            echo "::error::Expected package $WANT but the APK has $PKG"; exit 1
+          fi
+        fi
+        ls -lh "$FILE"
+        echo "file=$SWEETMELON_APP/$FILE" >> "$GITHUB_OUTPUT"
+        echo "package=$PKG" >> "$GITHUB_OUTPUT"
+
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact_name != '' && inputs.artifact_name || format('sweetmelon-{0}', inputs.target) }}
+        path: ${{ steps.result.outputs.file }}
+        retention-days: 14
+        if-no-files-found: error

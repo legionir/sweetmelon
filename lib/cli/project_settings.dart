@@ -79,12 +79,22 @@ String setProjectKey(String yaml, String key, String value) {
 String setProjectApplicationId(String yaml, String id) =>
     setProjectKey(yaml, 'application_id', id);
 
-/// Sets `plugins.<key>.enabled` in sweetmelon.yaml text. Returns [yaml]
-/// unchanged when the plugin has no `enabled:` line.
-String setPluginEnabled(String yaml, String key, bool enabled) {
+/// Sets `plugins.<key>.enabled` in sweetmelon.yaml text. A plugin without an
+/// `enabled:` line is added right below `plugins:` when [addIfMissing] is set,
+/// otherwise [yaml] is returned unchanged.
+String setPluginEnabled(String yaml, String key, bool enabled,
+    {bool addIfMissing = false}) {
   final pattern = RegExp(
     '(^  ${RegExp.escape(key)}:[ \\t]*(?:#.*)?\\r?\\n(?:[ \\t]*(?:#.*)?\\r?\\n)*?    enabled:[ \\t]*)(true|false)',
     multiLine: true,
   );
-  return yaml.replaceFirstMapped(pattern, (m) => '${m[1]}$enabled');
+  if (pattern.hasMatch(yaml)) {
+    return yaml.replaceFirstMapped(pattern, (m) => '${m[1]}$enabled');
+  }
+  if (!addIfMissing) return yaml;
+  final header =
+      RegExp(r'^plugins:[ \t]*(?:\{\})?[ \t]*(?:#.*)?\r?\n', multiLine: true);
+  final entry = '  $key:\n    enabled: $enabled\n';
+  return yaml.replaceFirstMapped(header,
+      (m) => m[0]!.contains('{}') ? 'plugins:\n$entry' : '${m[0]}$entry');
 }

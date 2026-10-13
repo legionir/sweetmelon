@@ -1,0 +1,14 @@
+core: "2.4"
+
+project:
+  name: ref_app
+  display_name: Ref App
+  version: 1.0.0
+  application_id: com.example.refapp
+  dart_package: ref_app
+
+plugin_selection:
+  mode: auto
+  include: [permission]
+
+plugins: {}

@@ -8,6 +8,7 @@ import 'package:yaml/yaml.dart';
 import 'core_compat.dart';
 import 'icon_generator.dart';
 import 'package_rename.dart';
+import 'plugin_catalog.dart';
 import 'plugin_detect.dart';
 import 'plugin_selection.dart';
 import 'project_settings.dart';
@@ -126,7 +127,10 @@ class PrepareRunner {
       if (strict && detected.dynamicUses.isNotEmpty) return 1;
       print('');
     }
-    final plugins = _selectedPlugins(yaml, selection, detected);
+    final catalog =
+        await PluginCatalog.load(p.join(root, 'tool', 'plugin_catalog.json'));
+    final plugins =
+        _selectedPlugins(yaml, selection, detected, catalog?.yamlKeys ?? {});
     if (plugins == null) return 1;
 
     print('Prepare');
@@ -157,7 +161,8 @@ class PrepareRunner {
       yaml = setProjectKey(yaml, 'display_name', _yamlString(appName));
     }
     if (icon != null) yaml = setProjectKey(yaml, 'icon', icon);
-    plugins.forEach((key, on) => yaml = setPluginEnabled(yaml, key, on));
+    plugins.forEach((key, on) =>
+        yaml = setPluginEnabled(yaml, key, on, addIfMissing: true));
     await yamlFile.writeAsString(yaml);
 
     // 5. Native and Dart renames, icon, sync.
@@ -184,11 +189,13 @@ class PrepareRunner {
   ///
   /// In auto mode every plugin starts off and only the [detected] ones (plus
   /// include) are on.
-  Map<String, bool>? _selectedPlugins(
-      String yaml, PluginSelection selection, DetectResult? detected) {
+  Map<String, bool>? _selectedPlugins(String yaml, PluginSelection selection,
+      DetectResult? detected, Set<String> catalogKeys) {
     final doc = loadYaml(yaml);
     final section = doc is YamlMap ? doc['plugins'] : null;
-    final result = <String, bool>{};
+    // A plugin missing from the file counts as enabled, so the full catalog
+    // is listed: every plugin gets an explicit flag.
+    final result = <String, bool>{for (final key in catalogKeys) key: true};
     if (section is YamlMap) {
       for (final entry in section.entries) {
         final settings = entry.value;
@@ -202,13 +209,13 @@ class PrepareRunner {
       }
       for (final key in detected.plugins) {
         if (!result.containsKey(key)) {
-          print('⚠️  $key is used but has no entry under plugins:');
+          print('⚠️  $key is used but is not a known plugin');
         }
       }
     }
     for (final name in [...selection.include, ...selection.exclude]) {
       if (!result.containsKey(name)) {
-        print('plugin_selection names "$name", which is not in plugins:');
+        print('plugin_selection names "$name", which is not a known plugin');
         return null;
       }
     }

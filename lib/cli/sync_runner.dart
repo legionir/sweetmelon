@@ -9,6 +9,7 @@ import 'native_sync.dart';
 import 'plugin_catalog.dart';
 import 'plugin_closure.dart';
 import 'plugin_native_requirements.dart';
+import 'package_rename.dart';
 import 'project_settings.dart';
 import 'pubspec_sync.dart';
 import 'safe_writer.dart';
@@ -101,6 +102,7 @@ class SyncRunner {
           before,
           catalog.entries,
           enabledKeys: locatorEnabled,
+          packageName: await _packageName(),
         );
         files[_serviceLocator] = after;
         _record(changes, _serviceLocator, after, before);
@@ -427,6 +429,13 @@ class SyncRunner {
       .replaceAll('>', '&gt;')
       .replaceAll('"', '&quot;')
       .replaceAll("'", '&apos;');
+
+  /// `name:` of the project's pubspec.yaml.
+  Future<String> _packageName() async {
+    final file = File(p.join(root, _pubspec));
+    if (!await file.exists()) return defaultPackageName;
+    return readPubspecName(await file.readAsString()) ?? defaultPackageName;
+  }
 
   Future<ProjectSettings> _readProject() async {
     final file = File(p.join(root, 'sweetmelon.yaml'));

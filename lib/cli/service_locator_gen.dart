@@ -14,10 +14,16 @@ import 'text_blocks.dart';
 ///
 /// Rendering the committed file with every catalog entry enabled gives the
 /// committed file back. The golden test checks this.
+/// Dart package name of the core as shipped. The generated imports use the
+/// project's real name (see `rename --dart-package`); the name is never written
+/// as a `package:` literal here, so a rename does not rewrite this file.
+const defaultPackageName = 'sweetmelon';
+
 String renderServiceLocator(
   String source,
   List<PluginCatalogEntry> catalog, {
   required Set<String> enabledKeys,
+  String packageName = defaultPackageName,
 }) {
   final enabled = [
     for (final entry in catalog)
@@ -27,7 +33,7 @@ String renderServiceLocator(
   final lazy = enabled.where((e) => e.kind == 'lazy').toList();
 
   var text = _block(source, 'plugin-imports', '', [
-    for (final p in enabled) "import 'package:sweetmelon/${p.importPath}';",
+    for (final p in enabled) "import 'package:$packageName/${p.importPath}';",
   ]);
   text = _block(text, 'eager-plugins', '    ', [
     for (final p in eager) ...[

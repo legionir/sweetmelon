@@ -106,6 +106,14 @@ linter:
       );
     });
 
+    test('plugin imports are found under a renamed Dart package', () {
+      expect(
+        importedPluginDirectories(
+            "import 'package:my_app/plugins/nfc/lib/nfc_plugin.dart';\n"),
+        {'nfc'},
+      );
+    });
+
     test('test target manifest is sorted and deduplicated', () {
       expect(
         renderActiveTestTargets(

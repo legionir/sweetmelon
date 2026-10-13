@@ -42,8 +42,19 @@ void main() {
       expect(off, contains('nfc:\n    enabled: false'));
     });
 
-    test('setPluginEnabled leaves an unknown plugin alone', () {
+    test('setPluginEnabled leaves an unlisted plugin alone by default', () {
       expect(setPluginEnabled(_yaml, 'nope', true), _yaml);
+    });
+
+    test('setPluginEnabled fills an empty plugins: {} mapping', () {
+      final out = setPluginEnabled('core: "2.4"\nplugins: {}\n', 'camera', true,
+          addIfMissing: true);
+      expect(out, 'core: "2.4"\nplugins:\n  camera:\n    enabled: true\n');
+    });
+
+    test('setPluginEnabled can add an unlisted plugin', () {
+      final out = setPluginEnabled(_yaml, 'nope', false, addIfMissing: true);
+      expect(out, contains('plugins:\n  nope:\n    enabled: false\n  camera:'));
     });
   });
 

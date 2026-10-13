@@ -36,14 +36,4 @@ runs:
         IN_ICON: ${{ inputs.icon }}
         IN_WWW: ${{ inputs.www }}
         IN_STRICT: ${{ inputs.strict }}
-      run: |
-        flutter pub get
-        ARGS=(--apply)
-        [ -n "$IN_PACKAGE_NAME" ] && ARGS+=(--package-name "$IN_PACKAGE_NAME")
-        [ -n "$IN_DART_PACKAGE" ] && ARGS+=(--dart-package "$IN_DART_PACKAGE")
-        [ -n "$IN_APP_NAME" ] && ARGS+=(--app-name "$IN_APP_NAME")
-        [ -n "$IN_ICON" ] && ARGS+=(--icon "$IN_ICON")
-        [ -n "$IN_WWW" ] && ARGS+=(--www "$IN_WWW")
-        [ "$IN_STRICT" = "true" ] && ARGS+=(--strict)
-        dart run bin/sweetmelon.dart prepare "${ARGS[@]}"
-        flutter pub get
+      run: tool/ci/prepare.sh

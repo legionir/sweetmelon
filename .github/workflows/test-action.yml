@@ -1,0 +1,44 @@
+name: Test action (ref mode)
+
+# Builds a small web app with the action in this repository, exactly as a
+# project that uses `legionir/sweetmelon@<tag>` would.
+on:
+  push:
+    branches: [main]
+    paths:
+      - action.yml
+      - tool/ci/**
+      - lib/cli/**
+      - bin/**
+      - tests/fixtures/ref-app/**
+      - .github/workflows/test-action.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ref-mode-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free disk space
+        run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost /opt/hostedtoolcache/CodeQL /usr/share/swift
+
+      - name: Build the fixture app
+        id: build
+        uses: ./
+        with:
+          target: apk
+          www: tests/fixtures/ref-app/www
+          config: tests/fixtures/ref-app/sweetmelon.yaml
+          package_name: com.example.fromaction
+          app_name: Action Demo
+          artifact_name: ref-mode-apk
+
+      - name: Check the result
+        run: |
+          test "${{ steps.build.outputs.package }}" = "com.example.fromaction"
+          test -f "${{ steps.build.outputs.file }}"

@@ -56,4 +56,17 @@ void main() {
     expect(entry.kind, 'eager');
     expect(entry.code, 'NetworkInfoPlugin()');
   });
+
+  test('imports use the package name it is given', () async {
+    final catalog = await PluginCatalog.load('tool/plugin_catalog.json');
+    final source = await File('lib/di/service_locator.dart').readAsString();
+    final rendered = renderServiceLocator(
+      source,
+      catalog!.entries,
+      enabledKeys: await _enabledCatalogKeys(catalog),
+      packageName: 'my_app',
+    );
+    expect(rendered, contains("import 'package:my_app/plugins/"));
+    expect(rendered, isNot(contains("import 'package:" 'sweetmelon/plugins/')));
+  });
 }

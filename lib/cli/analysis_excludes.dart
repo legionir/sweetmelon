@@ -3,10 +3,13 @@ import 'text_blocks.dart';
 const analysisExcludesPath = 'analysis_options.yaml';
 const activeTestTargetsPath = 'tool/sweetmelon_test_targets.txt';
 
+/// The package name is not spelled out, so the pattern keeps working after
+/// `rename --dart-package`.
+///
 /// Matches plugin imports only when they occur in a Dart import/export
 /// directive. Catalog strings and comments are deliberately ignored.
 final pluginImportDirective = RegExp(
-  r'''^\s*(?:import|export)\s+['"]package:sweetmelon/plugins/([a-z0-9_]+)/''',
+  r'''^\s*(?:import|export)\s+['"]package:[a-z0-9_]+/plugins/([a-z0-9_]+)/''',
   multiLine: true,
 );
 

@@ -77,8 +77,8 @@ void main() {
           isTrue);
       expect(hasError(run('core: "2.4"\nproject:\n  icon: logo.jpg\n'), 'icon'),
           isTrue);
-      expect(run('$base  dart_package: my_app\n  icon: a/b.png\n$tail'),
-          isEmpty);
+      expect(
+          run('$base  dart_package: my_app\n  icon: a/b.png\n$tail'), isEmpty);
     });
 
     test('plugin_selection rules', () {

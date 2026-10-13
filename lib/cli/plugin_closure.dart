@@ -23,7 +23,7 @@ class PluginClosure {
   /// Matches only real import/export directives, never a path in a comment or
   /// a string literal (such as plugin_registry_data.dart's catalog strings).
   static final _pluginImport = RegExp(
-    r'''^\s*(?:import|export)\s+['"]package:sweetmelon/plugins/([a-z0-9_]+)/''',
+    r'''^\s*(?:import|export)\s+['"]package:[a-z0-9_]+/plugins/([a-z0-9_]+)/''',
     multiLine: true,
   );
   static final _packageImport = RegExp(
