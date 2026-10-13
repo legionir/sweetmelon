@@ -762,13 +762,20 @@ class SweetmelonCLI {
     final apply = args['apply'] as bool;
     final force = args['force'] as bool;
 
+    var ranIdRename = false;
     if (dartPackage == null || newId != null) {
       final code =
           await RenameRunner().run(newId: newId, apply: apply, force: force);
       if (code != 0 || dartPackage == null) return code;
+      ranIdRename = true;
     }
-    return DartPackageRenameRunner()
-        .run(dartPackage, apply: apply, force: force);
+    // After the first step wrote its files the working tree is dirty because
+    // of this very command, so the second step must not refuse for that.
+    return DartPackageRenameRunner().run(
+      dartPackage,
+      apply: apply,
+      force: force || (apply && ranIdRename),
+    );
   }
 
   /// `icon <source.png> [--apply] [--force]`

@@ -125,8 +125,8 @@ void main() {
       'lib/plugins/x/lib/x.dart': "import '${_oldPkg}plugins/y.dart';\n",
       'test/a_test.dart': "import '${_oldPkg}a.dart';\n",
       'tool/plugin_catalog.json': '{"import": "${_oldPkg}plugins/x"}',
-      'docs/guide.md': '${_oldPkg} in docs is left alone',
-      'android/app/build.gradle.kts': '${_oldPkg} outside the roots',
+      'docs/guide.md': '$_oldPkg in docs is left alone',
+      'android/app/build.gradle.kts': '$_oldPkg outside the roots',
     };
 
     test('renames name, nested dependency key and package imports', () {
