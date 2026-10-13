@@ -1,0 +1,20 @@
+# Release of the Sweetmelon core this app is built for. Change it on purpose
+# (sweetmelon upgrade), after reading the core CHANGELOG.
+core: "2.4"
+
+project:
+  name: myapp
+  display_name: "My App"
+  version: 1.0.0
+  application_id: com.example.myapp
+  dart_package: myapp
+  # icon: icon.png            # square PNG, 1024 px or more
+
+# auto: the plugins your JavaScript calls are on, the rest are off.
+# Check with: dart run bin/sweetmelon.dart detect --www www
+plugin_selection:
+  mode: auto
+  include: []
+  exclude: []
+
+plugins: {}

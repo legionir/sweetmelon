@@ -86,3 +86,22 @@ installed on a device.
 - Permissions follow the enabled plugins and were derived from the plugin
   sources, not tested on each device.
 - Some plugins need extra native code in `MainActivity` and do not work yet.
+
+## Start from a template
+
+```bash
+dart run bin/sweetmelon.dart init ../my-app \
+  --package-name com.acme.myapp --app-name "My App" --apply
+```
+
+This writes the files above with the workflow already pinned to the core
+release you run it from. A ready copy is in
+[`examples/app-template`](https://github.com/legionir/sweetmelon/tree/main/examples/app-template);
+publish it as a repository with "Template repository" ticked in its settings.
+
+To move to another core release later:
+
+```bash
+dart run bin/sweetmelon.dart upgrade --to 2.4.1 --apply
+# a new minor release needs --allow-minor, a new major --allow-major
+```

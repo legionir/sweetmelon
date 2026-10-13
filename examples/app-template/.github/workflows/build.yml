@@ -1,0 +1,82 @@
+# Pinned to core v2.4.0. Change it with: sweetmelon upgrade --to <version>
+name: Build app
+
+on:
+  workflow_dispatch:
+    inputs:
+      package_name:
+        description: 'Android package name, e.g. com.acme.app (empty = sweetmelon.yaml)'
+        default: ''
+      dart_package:
+        description: 'Dart package name, e.g. my_app (empty = sweetmelon.yaml)'
+        default: ''
+      app_name:
+        description: 'Name under the icon (empty = sweetmelon.yaml)'
+        default: ''
+      build_apk:
+        type: boolean
+        default: true
+      build_aab:
+        type: boolean
+        default: false
+      build_ios:
+        description: 'Unsigned iOS build (compile check, not installable)'
+        type: boolean
+        default: false
+
+jobs:
+  apk:
+    if: ${{ inputs.build_apk }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: legionir/sweetmelon@v2.4.0
+        with:
+          target: apk
+          www: www
+          config: sweetmelon.yaml
+          icon: icon.png
+          package_name: ${{ inputs.package_name }}
+          dart_package: ${{ inputs.dart_package }}
+          app_name: ${{ inputs.app_name }}
+          # Your own key (Settings > Secrets). Without these the build is
+          # signed with a throw-away key: fine for testing, not for the store.
+          keystore_base64: ${{ secrets.KEYSTORE_BASE64 }}
+          keystore_password: ${{ secrets.KEYSTORE_PASSWORD }}
+          key_alias: ${{ secrets.KEY_ALIAS }}
+          key_password: ${{ secrets.KEY_PASSWORD }}
+
+  aab:
+    if: ${{ inputs.build_aab }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: legionir/sweetmelon@v2.4.0
+        with:
+          target: aab
+          www: www
+          config: sweetmelon.yaml
+          icon: icon.png
+          package_name: ${{ inputs.package_name }}
+          dart_package: ${{ inputs.dart_package }}
+          app_name: ${{ inputs.app_name }}
+          # Your own key (Settings > Secrets). Without these the build is
+          # signed with a throw-away key: fine for testing, not for the store.
+          keystore_base64: ${{ secrets.KEYSTORE_BASE64 }}
+          keystore_password: ${{ secrets.KEYSTORE_PASSWORD }}
+          key_alias: ${{ secrets.KEY_ALIAS }}
+          key_password: ${{ secrets.KEY_PASSWORD }}
+
+  ios:
+    if: ${{ inputs.build_ios }}
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: legionir/sweetmelon@v2.4.0
+        with:
+          target: ios
+          www: www
+          icon: icon.png
+          package_name: ${{ inputs.package_name }}
+          dart_package: ${{ inputs.dart_package }}
+          app_name: ${{ inputs.app_name }}
