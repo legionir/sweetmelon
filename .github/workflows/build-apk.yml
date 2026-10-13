@@ -202,7 +202,12 @@ jobs:
           flutter pub get
 
       - name: Build iOS app without code signing
-        run: flutter build ios --release --no-codesign
+        run: |
+          flutter build ios --release --no-codesign -v 2>&1 | tee "$RUNNER_TEMP/ios-build.log" || {
+            echo "--- Xcode errors ---"
+            grep -nE "error:|requires a development team|No profiles|CODE_SIGN" "$RUNNER_TEMP/ios-build.log" | head -40
+            exit 1
+          }
 
       - name: Zip the app
         run: |
