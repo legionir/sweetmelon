@@ -1,18 +1,38 @@
-name: Build Android APK (Manual)
+name: Build App (APK / AAB / iOS)
 
 on:
   workflow_dispatch:
     inputs:
       package_name:
-        description: 'Android package name (applicationId), e.g. com.acme.app. Empty keeps the current one.'
+        description: 'Android package name (applicationId) / iOS bundle id, e.g. com.acme.app. Empty keeps sweetmelon.yaml.'
         required: false
         default: ''
         type: string
       dart_package:
-        description: 'Dart package name, e.g. my_app. Empty keeps the current one.'
+        description: 'Dart package name, e.g. my_app. Empty keeps sweetmelon.yaml.'
         required: false
         default: ''
         type: string
+      app_name:
+        description: 'App name shown under the icon. Empty keeps sweetmelon.yaml.'
+        required: false
+        default: ''
+        type: string
+      build_apk:
+        description: 'Build an APK (armeabi-v7a + arm64-v8a)'
+        required: false
+        default: true
+        type: boolean
+      build_aab:
+        description: 'Build an Android App Bundle (signed with a throw-away key, not uploadable to Play)'
+        required: false
+        default: false
+        type: boolean
+      build_ios:
+        description: 'Build an iOS app without code signing (not installable; for compile checks)'
+        required: false
+        default: false
+        type: boolean
       clean_build:
         description: 'Run flutter clean before building'
         required: false
@@ -23,13 +43,25 @@ permissions:
   contents: read
 
 jobs:
-  build-android-apk:
-    name: Build Signed Android APK (ARM)
+  check-inputs:
+    name: Check inputs
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    steps:
+      - name: At least one output
+        run: |
+          if [ "${{ inputs.build_apk }}" != "true" ] && [ "${{ inputs.build_aab }}" != "true" ] && [ "${{ inputs.build_ios }}" != "true" ]; then
+            echo "::error::Tick at least one of build_apk, build_aab, build_ios"
+            exit 1
+          fi
+
+  build-android:
+    name: Build Android
+    needs: check-inputs
+    if: ${{ inputs.build_apk || inputs.build_aab }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
     env:
       PACKAGE_NAME: ${{ inputs.package_name }}
-      DART_PACKAGE: ${{ inputs.dart_package }}
 
     steps:
       - name: Checkout repository
@@ -59,30 +91,17 @@ jobs:
           java -version
           flutter --version
 
-      - name: Resolve dependencies
-        run: flutter pub get
-
-      # The three project tools run before every build. The CLI validates the
-      # names and fails the job with a message when one is not valid.
-      - name: Rename the Android package (if requested)
-        if: ${{ inputs.package_name != '' }}
-        run: dart run bin/sweetmelon.dart rename --id "$PACKAGE_NAME" --apply --force
-
-      - name: Rename the Dart package (if requested)
-        if: ${{ inputs.dart_package != '' }}
-        run: |
-          dart run bin/sweetmelon.dart rename --dart-package "$DART_PACKAGE" --apply --force
-          flutter pub get
-
-      - name: Sync permissions and dependencies with sweetmelon.yaml
-        # Adds the pubspec dependencies, Android permissions and iOS usage
-        # descriptions that the enabled plugins need, and removes the rest.
-        run: |
-          dart run bin/sweetmelon.dart sync --apply --force
-          flutter pub get
+      # Package names, app name, plugins and permissions in one step. The CLI
+      # validates every value and fails the job with a message when one is bad.
+      - name: Prepare the project
+        uses: ./.github/actions/prepare
+        with:
+          package_name: ${{ inputs.package_name }}
+          dart_package: ${{ inputs.dart_package }}
+          app_name: ${{ inputs.app_name }}
 
       - name: Clean Build Cache (Optional)
-        if: ${{ github.event.inputs.clean_build == 'true' }}
+        if: ${{ inputs.clean_build }}
         run: |
           flutter clean
           flutter pub get
@@ -104,7 +123,8 @@ jobs:
             -validity 10000 \
             -dname "CN=Sweetmelon, OU=Mobile, O=Sweetmelon, L=Global, S=Global, C=US"
 
-      - name: Build Signed Android Release APK (armeabi-v7a + arm64-v8a)
+      - name: Build APK (armeabi-v7a + arm64-v8a)
+        if: ${{ inputs.build_apk }}
         run: |
           export SWEETMELON_KEYSTORE_PATH="release.jks"
           export SWEETMELON_KEYSTORE_PASSWORD="$KEYSTORE_PASSWORD"
@@ -112,7 +132,17 @@ jobs:
           export SWEETMELON_KEY_PASSWORD="$KEYSTORE_PASSWORD"
           flutter build apk --release --target-platform android-arm,android-arm64
 
+      - name: Build App Bundle
+        if: ${{ inputs.build_aab }}
+        run: |
+          export SWEETMELON_KEYSTORE_PATH="release.jks"
+          export SWEETMELON_KEYSTORE_PASSWORD="$KEYSTORE_PASSWORD"
+          export SWEETMELON_KEY_ALIAS="sweetmelon"
+          export SWEETMELON_KEY_PASSWORD="$KEYSTORE_PASSWORD"
+          flutter build appbundle --release
+
       - name: Verify the package name of the APK
+        if: ${{ inputs.build_apk }}
         run: |
           APK=build/app/outputs/flutter-apk/app-release.apk
           AAPT="$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)"
@@ -124,10 +154,65 @@ jobs:
           fi
           ls -lh build/app/outputs/flutter-apk/*.apk
 
-      - name: Upload APK Artifact
+      - name: Upload APK
+        if: ${{ inputs.build_apk }}
         uses: actions/upload-artifact@v4
         with:
           name: sweetmelon-apk-${{ inputs.package_name != '' && inputs.package_name || 'default' }}
           path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Upload App Bundle
+        if: ${{ inputs.build_aab }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: sweetmelon-aab-${{ inputs.package_name != '' && inputs.package_name || 'default' }}
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 14
+          if-no-files-found: error
+
+  build-ios:
+    name: Build iOS (no code signing)
+    needs: check-inputs
+    if: ${{ inputs.build_ios }}
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Prepare the project
+        uses: ./.github/actions/prepare
+        with:
+          package_name: ${{ inputs.package_name }}
+          dart_package: ${{ inputs.dart_package }}
+          app_name: ${{ inputs.app_name }}
+
+      - name: Clean Build Cache (Optional)
+        if: ${{ inputs.clean_build }}
+        run: |
+          flutter clean
+          flutter pub get
+
+      - name: Build iOS app without code signing
+        run: flutter build ios --release --no-codesign
+
+      - name: Zip the app
+        run: |
+          cd build/ios/iphoneos
+          ditto -c -k --sequesterRsrc --keepParent Runner.app ../../../Runner-app.zip
+
+      - name: Upload iOS app
+        uses: actions/upload-artifact@v4
+        with:
+          name: sweetmelon-ios-${{ inputs.package_name != '' && inputs.package_name || 'default' }}
+          path: Runner-app.zip
           retention-days: 14
           if-no-files-found: error

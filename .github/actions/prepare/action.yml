@@ -1,0 +1,49 @@
+name: Prepare Sweetmelon project
+description: >
+  Runs "sweetmelon prepare" (package names, app name, icon, plugin selection,
+  sync) and then "flutter pub get". Empty inputs keep the values from
+  sweetmelon.yaml.
+
+inputs:
+  package_name:
+    description: Android package name / iOS bundle id
+    default: ''
+  dart_package:
+    description: Dart package name
+    default: ''
+  app_name:
+    description: Name shown under the app icon
+    default: ''
+  icon:
+    description: Path of a square PNG (1024 px or more)
+    default: ''
+  www:
+    description: Folder with the web app to inject into assets/www
+    default: ''
+  strict:
+    description: Fail when a bridge call cannot be resolved to a plugin
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: sweetmelon prepare
+      shell: bash
+      env:
+        IN_PACKAGE_NAME: ${{ inputs.package_name }}
+        IN_DART_PACKAGE: ${{ inputs.dart_package }}
+        IN_APP_NAME: ${{ inputs.app_name }}
+        IN_ICON: ${{ inputs.icon }}
+        IN_WWW: ${{ inputs.www }}
+        IN_STRICT: ${{ inputs.strict }}
+      run: |
+        flutter pub get
+        ARGS=(--apply)
+        [ -n "$IN_PACKAGE_NAME" ] && ARGS+=(--package-name "$IN_PACKAGE_NAME")
+        [ -n "$IN_DART_PACKAGE" ] && ARGS+=(--dart-package "$IN_DART_PACKAGE")
+        [ -n "$IN_APP_NAME" ] && ARGS+=(--app-name "$IN_APP_NAME")
+        [ -n "$IN_ICON" ] && ARGS+=(--icon "$IN_ICON")
+        [ -n "$IN_WWW" ] && ARGS+=(--www "$IN_WWW")
+        [ "$IN_STRICT" = "true" ] && ARGS+=(--strict)
+        dart run bin/sweetmelon.dart prepare "${ARGS[@]}"
+        flutter pub get
