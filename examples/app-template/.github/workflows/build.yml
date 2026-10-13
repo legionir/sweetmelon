@@ -35,7 +35,6 @@ jobs:
           target: apk
           www: www
           config: sweetmelon.yaml
-          icon: icon.png
           package_name: ${{ inputs.package_name }}
           dart_package: ${{ inputs.dart_package }}
           app_name: ${{ inputs.app_name }}
@@ -56,7 +55,6 @@ jobs:
           target: aab
           www: www
           config: sweetmelon.yaml
-          icon: icon.png
           package_name: ${{ inputs.package_name }}
           dart_package: ${{ inputs.dart_package }}
           app_name: ${{ inputs.app_name }}
@@ -76,7 +74,6 @@ jobs:
         with:
           target: ios
           www: www
-          icon: icon.png
           package_name: ${{ inputs.package_name }}
           dart_package: ${{ inputs.dart_package }}
           app_name: ${{ inputs.app_name }}
