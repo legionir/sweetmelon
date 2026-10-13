@@ -4,7 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "generate": "node scripts/generate-plugin-docs.mjs",
+    "predev": "npm run generate",
     "dev": "vitepress dev",
+    "prebuild": "npm run generate",
     "build": "vitepress build",
     "preview": "vitepress preview",
     "deploy": "vitepress build && gh-pages -d .vitepress/dist"

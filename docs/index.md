@@ -6,7 +6,7 @@ hero:
   text: "Flutter Native Bridge"
   tagline: Run Angular, React, or Vue apps inside Flutter with 104 native plugins
   image:
-    src: /logo.svg
+    src: /logo.png
     alt: Sweetmelon
   actions:
     - theme: brand
@@ -17,24 +17,24 @@ hero:
       link: /plugins/overview
     - theme: alt
       text: GitHub
-      link: https://github.com/your-org/sweetmelon
+      link: https://github.com/legionir/sweetmelon
 
 features:
   - icon: 🔌
     title: 104 Native Plugins
-    details: Camera, GPS, Bluetooth, NFC, Biometrics, Database, Push Notifications, In-App Purchase, and 83 more.
+    details: Camera, GPS, Bluetooth, NFC, Biometrics, Database, Push Notifications, In-App Purchase, and many more.
     link: /plugins/overview
     linkText: Browse all plugins
 
   - icon: ⚡
-    title: Zero Latency Bridge
-    details: Optimized JSON protocol with batch calls, caching, rate limiting, and circuit breaker.
-    link: /advanced/performance
+    title: Fast Bridge
+    details: A JSON protocol with batch calls, caching and rate limiting, plus retries, circuit breakers and an offline queue in NativeResilience.
+    link: /api/native-sdk
 
   - icon: 🔒
     title: Security Built-in
-    details: Bridge authentication, message signing, SSL pinning, anti-tampering, and encrypted storage.
-    link: /advanced/security
+    details: A per-page session token, strict message validation, permission checks, rate limiting, SSL pinning and sandboxed storage.
+    link: /SECURITY
 
   - icon: 📦
     title: Framework Agnostic

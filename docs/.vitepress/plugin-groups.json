@@ -1,0 +1,326 @@
+[
+ {
+  "group": "Core",
+  "dir": "core",
+  "plugins": [
+   {
+    "text": "Permission",
+    "slug": "permission",
+    "plugin": "permission"
+   },
+   {
+    "text": "App Lifecycle",
+    "slug": "app-lifecycle",
+    "plugin": "app_lifecycle"
+   },
+   {
+    "text": "Device Info",
+    "slug": "device-info",
+    "plugin": "device_info"
+   },
+   {
+    "text": "Connectivity",
+    "slug": "connectivity",
+    "plugin": "connectivity"
+   },
+   {
+    "text": "Storage",
+    "slug": "storage",
+    "plugin": "storage"
+   },
+   {
+    "text": "File System",
+    "slug": "file-system",
+    "plugin": "file_system"
+   },
+   {
+    "text": "HTTP",
+    "slug": "http",
+    "plugin": "http_native"
+   },
+   {
+    "text": "Intent / Deep Link",
+    "slug": "intent",
+    "plugin": "intent_link"
+   },
+   {
+    "text": "Clipboard",
+    "slug": "clipboard",
+    "plugin": "clipboard"
+   },
+   {
+    "text": "Share",
+    "slug": "share",
+    "plugin": "share"
+   }
+  ]
+ },
+ {
+  "group": "Media",
+  "dir": "media",
+  "plugins": [
+   {
+    "text": "Camera",
+    "slug": "camera",
+    "plugin": "camera"
+   },
+   {
+    "text": "Camera Preview",
+    "slug": "camera-preview",
+    "plugin": "camera_preview"
+   },
+   {
+    "text": "Audio",
+    "slug": "audio",
+    "plugin": "audio"
+   },
+   {
+    "text": "Video Player",
+    "slug": "video-player",
+    "plugin": "video_player"
+   },
+   {
+    "text": "QR Scanner",
+    "slug": "qr-scanner",
+    "plugin": "qr_scanner"
+   },
+   {
+    "text": "Document Scanner",
+    "slug": "document-scanner",
+    "plugin": "document_scanner"
+   }
+  ]
+ },
+ {
+  "group": "UI",
+  "dir": "ui",
+  "plugins": [
+   {
+    "text": "Dialog",
+    "slug": "dialog",
+    "plugin": "dialog"
+   },
+   {
+    "text": "Toast",
+    "slug": "toast",
+    "plugin": "toast"
+   },
+   {
+    "text": "Action Sheet",
+    "slug": "action-sheet",
+    "plugin": "action_sheet"
+   },
+   {
+    "text": "Date Picker",
+    "slug": "date-picker",
+    "plugin": "date_picker"
+   },
+   {
+    "text": "Status Bar",
+    "slug": "status-bar",
+    "plugin": "status_bar"
+   },
+   {
+    "text": "Navigation Bar",
+    "slug": "navigation-bar",
+    "plugin": "navigation_bar"
+   },
+   {
+    "text": "Orientation",
+    "slug": "orientation",
+    "plugin": "orientation"
+   },
+   {
+    "text": "Splash Screen",
+    "slug": "splash-screen",
+    "plugin": "splash_screen"
+   },
+   {
+    "text": "Text Zoom",
+    "slug": "text-zoom",
+    "plugin": "text_zoom"
+   }
+  ]
+ },
+ {
+  "group": "Device",
+  "dir": "device",
+  "plugins": [
+   {
+    "text": "Geolocation",
+    "slug": "geolocation",
+    "plugin": "geolocation"
+   },
+   {
+    "text": "Sensors",
+    "slug": "sensors",
+    "plugin": "sensors"
+   },
+   {
+    "text": "Bluetooth",
+    "slug": "bluetooth",
+    "plugin": "bluetooth"
+   },
+   {
+    "text": "NFC",
+    "slug": "nfc",
+    "plugin": "nfc"
+   },
+   {
+    "text": "Biometrics",
+    "slug": "biometrics",
+    "plugin": "biometrics"
+   },
+   {
+    "text": "Contacts",
+    "slug": "contacts",
+    "plugin": "contacts"
+   }
+  ]
+ },
+ {
+  "group": "Storage & Files",
+  "dir": "storage",
+  "plugins": [
+   {
+    "text": "Secure Storage",
+    "slug": "secure-storage",
+    "plugin": "secure_storage"
+   },
+   {
+    "text": "Database",
+    "slug": "database",
+    "plugin": "database"
+   },
+   {
+    "text": "File Picker",
+    "slug": "file-picker",
+    "plugin": "file_picker"
+   },
+   {
+    "text": "File Compressor",
+    "slug": "file-compressor",
+    "plugin": "file_compressor"
+   },
+   {
+    "text": "Zip",
+    "slug": "zip",
+    "plugin": "zip"
+   }
+  ]
+ },
+ {
+  "group": "Network",
+  "dir": "network",
+  "plugins": [
+   {
+    "text": "WebSocket",
+    "slug": "websocket",
+    "plugin": "websocket"
+   },
+   {
+    "text": "Download Manager",
+    "slug": "download-manager",
+    "plugin": "download_manager"
+   },
+   {
+    "text": "WiFi",
+    "slug": "wifi-manager",
+    "plugin": "wifi_manager"
+   }
+  ]
+ },
+ {
+  "group": "Security",
+  "dir": "security",
+  "plugins": [
+   {
+    "text": "Encryption",
+    "slug": "encryption",
+    "plugin": "encryption"
+   },
+   {
+    "text": "Root Detection",
+    "slug": "root-detection",
+    "plugin": "root_detection"
+   },
+   {
+    "text": "App Integrity",
+    "slug": "app-integrity",
+    "plugin": "app_integrity"
+   },
+   {
+    "text": "Privacy Screen",
+    "slug": "privacy-screen",
+    "plugin": "privacy_screen"
+   }
+  ]
+ },
+ {
+  "group": "Firebase",
+  "dir": "firebase",
+  "plugins": [
+   {
+    "text": "Analytics",
+    "slug": "analytics",
+    "plugin": "firebase_analytics"
+   },
+   {
+    "text": "Crashlytics",
+    "slug": "crashlytics",
+    "plugin": "firebase_crashlytics"
+   },
+   {
+    "text": "Auth",
+    "slug": "auth",
+    "plugin": "firebase_auth"
+   },
+   {
+    "text": "Remote Config",
+    "slug": "remote-config",
+    "plugin": "firebase_remote_config"
+   },
+   {
+    "text": "Push Notifications",
+    "slug": "push-notification",
+    "plugin": "push_notification"
+   }
+  ]
+ },
+ {
+  "group": "Advanced",
+  "dir": "advanced",
+  "plugins": [
+   {
+    "text": "Live Updater",
+    "slug": "live-updater",
+    "plugin": "live_updater"
+   },
+   {
+    "text": "Background Task",
+    "slug": "background-task",
+    "plugin": "background_task"
+   },
+   {
+    "text": "In-App Purchase",
+    "slug": "in-app-purchase",
+    "plugin": "in_app_purchase"
+   },
+   {
+    "text": "OAuth2",
+    "slug": "oauth2",
+    "plugin": "oauth2"
+   },
+   {
+    "text": "Social Login",
+    "slug": "social-login",
+    "plugin": "social_login"
+   },
+   {
+    "text": "Google Maps",
+    "slug": "google-maps",
+    "plugin": "google_maps"
+   }
+  ]
+ }
+]
