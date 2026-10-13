@@ -32,6 +32,13 @@ void main() {
     expect(RegExp(r'legionir/sweetmelon@v').allMatches(text).length, 3);
   });
 
+  test('the workflow does not require an icon file that init never writes', () {
+    final files = template();
+    final text = files['.github/workflows/build.yml']!;
+    expect(RegExp(r'^\s*icon:', multiLine: true).hasMatch(text), isFalse);
+    expect(files.keys.where((k) => k.endsWith('.png')), isEmpty);
+  });
+
   test('the sample page uses storage and toast, which detect finds', () async {
     final catalog = await PluginCatalog.load('tool/plugin_catalog.json');
     final result = detectPlugins(
