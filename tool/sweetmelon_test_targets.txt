@@ -9,6 +9,7 @@ test/plugins/storage_plugin_test.dart
 test/plugins/toast_plugin_test.dart
 test/plugins/toast_plugin_widget_test.dart
 test/unit/camera_validation_test.dart
+test/unit/cli/app_scaffold_test.dart
 test/unit/cli/config_validator_test.dart
 test/unit/cli/core_compat_test.dart
 test/unit/cli/icon_generator_test.dart

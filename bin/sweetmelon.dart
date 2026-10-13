@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:yaml/yaml.dart';
 import 'package:sweetmelon/core_version.dart';
+import 'package:sweetmelon/cli/app_scaffold.dart';
 import 'package:sweetmelon/cli/config_processor.dart';
 import 'package:sweetmelon/cli/config_validator.dart';
 import 'package:sweetmelon/cli/plugin_catalog.dart';
@@ -70,6 +71,26 @@ void main(List<String> args) async {
             negatable: false,
             help: 'In plugin_selection auto mode, fail on calls whose '
                 'plugin cannot be determined')
+        ..addFlag('apply', negatable: false, help: 'Write the changes'),
+    )
+    ..addCommand(
+      'init',
+      ArgParser()
+        ..addOption('package-name',
+            help: 'Android package name, e.g. com.acme.app')
+        ..addOption('app-name', help: 'Name shown under the icon')
+        ..addOption('dart-package',
+            help: 'Dart package name (default: last part of the package name)')
+        ..addFlag('apply', negatable: false, help: 'Write the files'),
+    )
+    ..addCommand(
+      'upgrade',
+      ArgParser()
+        ..addOption('to', help: 'Exact core version, e.g. 2.4.1')
+        ..addFlag('allow-minor',
+            negatable: false, help: 'Allow a new minor release (2.4 -> 2.5)')
+        ..addFlag('allow-major',
+            negatable: false, help: 'Allow a new major release (2 -> 3)')
         ..addFlag('apply', negatable: false, help: 'Write the changes'),
     )
     ..addCommand(
@@ -146,6 +167,12 @@ void main(List<String> args) async {
     case 'rename':
       exitCode = await cli.rename(command);
       break;
+    case 'init':
+      exitCode = await cli.init(command);
+      break;
+    case 'upgrade':
+      exitCode = await cli.upgrade(command);
+      break;
     case 'detect':
       exitCode = await DetectRunner()
           .run(www: command['www'] as String?, strict: command['strict'] as bool);
@@ -184,6 +211,9 @@ Commands:
             sweetmelon.yaml (--apply to write, --check for CI)
   rename    Change the Android applicationId / iOS bundle id (--id) and the
             Dart package name (--dart-package) (--apply)
+  init      Create a new app folder that builds with the core as an Action
+            (init <folder> --package-name ... --app-name ... --apply)
+  upgrade   Move an app to another core release (--to 2.4.1 --apply)
   detect    List the plugins the web app uses (--www dir, --strict)
   prepare   Get a checkout ready to build: inject www, choose plugins, set
             package name, Dart package, app name and icon, then sync (--apply)
@@ -814,6 +844,39 @@ class SweetmelonCLI {
       dartPackage,
       apply: apply,
       force: force || (apply && ranIdRename),
+    );
+  }
+
+  /// `init <folder> --package-name id --app-name name [--dart-package n]`
+  Future<int> init(ArgResults args) async {
+    final packageName = args['package-name'] as String?;
+    final appName = args['app-name'] as String?;
+    if (args.rest.length != 1 || packageName == null || appName == null) {
+      print('Usage: sweetmelon init <folder> --package-name com.acme.app '
+          '--app-name "My App" [--dart-package my_app] [--apply]');
+      return 64;
+    }
+    return InitRunner().run(
+      args.rest.single,
+      appName: appName,
+      applicationId: packageName,
+      dartPackage: args['dart-package'] as String?,
+      apply: args['apply'] as bool,
+    );
+  }
+
+  /// `upgrade --to 2.4.1 [--allow-minor] [--allow-major] [--apply]`
+  Future<int> upgrade(ArgResults args) async {
+    final to = args['to'] as String?;
+    if (to == null) {
+      print('Usage: sweetmelon upgrade --to 2.4.1 [--apply]');
+      return 64;
+    }
+    return UpgradeRunner().run(
+      to,
+      apply: args['apply'] as bool,
+      allowMinor: args['allow-minor'] as bool,
+      allowMajor: args['allow-major'] as bool,
     );
   }
 
