@@ -61,16 +61,30 @@ class ProjectSettings {
   }
 }
 
-/// Sets `project.application_id` in sweetmelon.yaml text. Replaces the line
-/// when it exists; otherwise adds it under `project:` after `version:`.
-/// Returns [yaml] unchanged when neither line is found.
-String setProjectApplicationId(String yaml, String id) {
-  final existing = RegExp(r'^  application_id:.*$', multiLine: true);
+/// Sets `project.<key>` in sweetmelon.yaml text. Replaces the line when it
+/// exists; otherwise adds it under `project:` after `version:`. Returns [yaml]
+/// unchanged when neither line is found.
+String setProjectKey(String yaml, String key, String value) {
+  final existing = RegExp('^  ${RegExp.escape(key)}:.*\$', multiLine: true);
   if (existing.hasMatch(yaml)) {
-    return yaml.replaceFirst(existing, '  application_id: $id');
+    return yaml.replaceFirst(existing, '  $key: $value');
   }
   return yaml.replaceFirstMapped(
     RegExp(r'^  version:.*$', multiLine: true),
-    (m) => '${m[0]!}\n  application_id: $id',
+    (m) => '${m[0]!}\n  $key: $value',
   );
+}
+
+/// Sets `project.application_id` in sweetmelon.yaml text (see [setProjectKey]).
+String setProjectApplicationId(String yaml, String id) =>
+    setProjectKey(yaml, 'application_id', id);
+
+/// Sets `plugins.<key>.enabled` in sweetmelon.yaml text. Returns [yaml]
+/// unchanged when the plugin has no `enabled:` line.
+String setPluginEnabled(String yaml, String key, bool enabled) {
+  final pattern = RegExp(
+    '(^  ${RegExp.escape(key)}:[ \\t]*(?:#.*)?\\r?\\n(?:[ \\t]*(?:#.*)?\\r?\\n)*?    enabled:[ \\t]*)(true|false)',
+    multiLine: true,
+  );
+  return yaml.replaceFirstMapped(pattern, (m) => '${m[1]}$enabled');
 }

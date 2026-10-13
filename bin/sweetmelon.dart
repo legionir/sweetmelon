@@ -6,6 +6,7 @@ import 'package:sweetmelon/core_version.dart';
 import 'package:sweetmelon/cli/config_processor.dart';
 import 'package:sweetmelon/cli/config_validator.dart';
 import 'package:sweetmelon/cli/plugin_catalog.dart';
+import 'package:sweetmelon/cli/prepare_runner.dart';
 import 'package:sweetmelon/cli/safe_writer.dart';
 import 'package:sweetmelon/cli/sync_runner.dart';
 import 'package:sweetmelon/cli/tool_runners.dart';
@@ -52,6 +53,19 @@ void main(List<String> args) async {
         ..addFlag('apply', negatable: false, help: 'Write the changes')
         ..addFlag('force',
             negatable: false, help: 'Write even with uncommitted git changes'),
+    )
+    ..addCommand(
+      'prepare',
+      ArgParser()
+        ..addOption('www',
+            help: 'Folder with the app (index.html, js, css) copied into '
+                'assets/www')
+        ..addOption('package-name',
+            help: 'Android applicationId / iOS bundle id, e.g. com.acme.app')
+        ..addOption('dart-package', help: 'Dart package name, e.g. my_app')
+        ..addOption('app-name', help: 'Name shown under the app icon')
+        ..addOption('icon', help: 'Square PNG, 1024 px or more')
+        ..addFlag('apply', negatable: false, help: 'Write the changes'),
     )
     ..addCommand(
       'icon',
@@ -119,6 +133,9 @@ void main(List<String> args) async {
     case 'rename':
       exitCode = await cli.rename(command);
       break;
+    case 'prepare':
+      exitCode = await cli.prepare(command);
+      break;
     case 'icon':
       exitCode = await cli.icon(command);
       break;
@@ -150,6 +167,8 @@ Commands:
             sweetmelon.yaml (--apply to write, --check for CI)
   rename    Change the Android applicationId / iOS bundle id (--id) and the
             Dart package name (--dart-package) (--apply)
+  prepare   Get a checkout ready to build: inject www, choose plugins, set
+            package name, Dart package, app name and icon, then sync (--apply)
   icon      Generate all app icons from a square PNG of 1024 px or more (--apply)
   bump      Bump the version: build | patch | minor | major (--apply)
 
@@ -169,6 +188,7 @@ Examples:
   dart run bin/sweetmelon.dart sync --check
   dart run bin/sweetmelon.dart rename --id com.acme.app --apply
   dart run bin/sweetmelon.dart rename --dart-package my_app --apply
+  dart run bin/sweetmelon.dart prepare --www my_www --package-name com.acme.app --apply
   dart run bin/sweetmelon.dart icon assets/icon.png --apply
   dart run bin/sweetmelon.dart bump patch --apply
 ''');
@@ -778,6 +798,19 @@ class SweetmelonCLI {
       force: force || (apply && ranIdRename),
     );
   }
+
+  /// `prepare [--www dir] [--package-name id] [--dart-package name]
+  /// [--app-name name] [--icon file] [--apply]`
+  Future<int> prepare(ArgResults args) => PrepareRunner().run(
+        PrepareOverrides(
+          www: args['www'] as String?,
+          applicationId: args['package-name'] as String?,
+          dartPackage: args['dart-package'] as String?,
+          appName: args['app-name'] as String?,
+          icon: args['icon'] as String?,
+        ),
+        apply: args['apply'] as bool,
+      );
 
   /// `icon <source.png> [--apply] [--force]`
   Future<int> icon(ArgResults args) async {

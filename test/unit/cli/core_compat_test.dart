@@ -77,7 +77,7 @@ void main() {
           isTrue);
       expect(hasError(run('core: "2.4"\nproject:\n  icon: logo.jpg\n'), 'icon'),
           isTrue);
-      expect(run('${base}  dart_package: my_app\n  icon: a/b.png\n$tail'),
+      expect(run('$base  dart_package: my_app\n  icon: a/b.png\n$tail'),
           isEmpty);
     });
 
@@ -96,7 +96,7 @@ void main() {
               'both'),
           isTrue);
       expect(
-          run('${base}$tail'
+          run('$base$tail'
               'plugin_selection:\n  mode: auto\n  include: [camera]\n  exclude: [storage]\n'),
           isEmpty);
     });
