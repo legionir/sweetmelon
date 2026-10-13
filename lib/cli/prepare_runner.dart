@@ -8,6 +8,7 @@ import 'package:yaml/yaml.dart';
 import 'core_compat.dart';
 import 'icon_generator.dart';
 import 'package_rename.dart';
+import 'plugin_detect.dart';
 import 'plugin_selection.dart';
 import 'project_settings.dart';
 import 'sync_runner.dart';
@@ -51,7 +52,8 @@ class PrepareRunner {
 
   final String root;
 
-  Future<int> run(PrepareOverrides overrides, {bool apply = false}) async {
+  Future<int> run(PrepareOverrides overrides,
+      {bool apply = false, bool strict = false}) async {
     final yamlFile = File(p.join(root, sweetmelonYaml));
     if (!await yamlFile.exists()) {
       print('$sweetmelonYaml not found in $root');
@@ -111,12 +113,20 @@ class PrepareRunner {
     }
 
     final selection = PluginSelection.fromYaml(yaml);
+    DetectResult? detected;
     if (selection.mode == SelectionMode.auto) {
-      print('plugin_selection.mode auto needs "sweetmelon detect", which is '
-          'not available yet');
-      return 1;
+      final scanDir = wwwDir ?? p.join(root, 'assets', 'www');
+      detected = await detectInProject(root, scanDir);
+      if (detected == null) {
+        print('plugin_selection.mode auto needs tool/plugin_catalog.json and '
+            'assets/www/js/native-sdk.js');
+        return 1;
+      }
+      DetectRunner.printReport(detected, scanDir, strict: strict);
+      if (strict && detected.dynamicUses.isNotEmpty) return 1;
+      print('');
     }
-    final plugins = _selectedPlugins(yaml, selection);
+    final plugins = _selectedPlugins(yaml, selection, detected);
     if (plugins == null) return 1;
 
     print('Prepare');
@@ -151,8 +161,11 @@ class PrepareRunner {
     await yamlFile.writeAsString(yaml);
 
     // 5. Native and Dart renames, icon, sync.
-    var code = await RenameRunner(root: root).run(apply: true, force: true);
-    if (code != 0) return code;
+    var code = 0;
+    if (applicationId != null) {
+      code = await RenameRunner(root: root).run(apply: true, force: true);
+      if (code != 0) return code;
+    }
     if (dartPackage != null) {
       code = await DartPackageRenameRunner(root: root)
           .run(dartPackage, apply: true, force: true);
@@ -168,7 +181,11 @@ class PrepareRunner {
   }
 
   /// `plugins:` flags after include/exclude. Null when a name is unknown.
-  Map<String, bool>? _selectedPlugins(String yaml, PluginSelection selection) {
+  ///
+  /// In auto mode every plugin starts off and only the [detected] ones (plus
+  /// include) are on.
+  Map<String, bool>? _selectedPlugins(
+      String yaml, PluginSelection selection, DetectResult? detected) {
     final doc = loadYaml(yaml);
     final section = doc is YamlMap ? doc['plugins'] : null;
     final result = <String, bool>{};
@@ -177,6 +194,16 @@ class PrepareRunner {
         final settings = entry.value;
         final flag = settings is YamlMap ? settings['enabled'] : null;
         result[entry.key.toString()] = flag is bool ? flag : true;
+      }
+    }
+    if (detected != null) {
+      for (final key in result.keys.toList()) {
+        result[key] = detected.plugins.contains(key);
+      }
+      for (final key in detected.plugins) {
+        if (!result.containsKey(key)) {
+          print('⚠️  $key is used but has no entry under plugins:');
+        }
       }
     }
     for (final name in [...selection.include, ...selection.exclude]) {

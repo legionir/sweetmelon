@@ -6,6 +6,7 @@ import 'package:sweetmelon/core_version.dart';
 import 'package:sweetmelon/cli/config_processor.dart';
 import 'package:sweetmelon/cli/config_validator.dart';
 import 'package:sweetmelon/cli/plugin_catalog.dart';
+import 'package:sweetmelon/cli/plugin_detect.dart';
 import 'package:sweetmelon/cli/prepare_runner.dart';
 import 'package:sweetmelon/cli/safe_writer.dart';
 import 'package:sweetmelon/cli/sync_runner.dart';
@@ -65,7 +66,19 @@ void main(List<String> args) async {
         ..addOption('dart-package', help: 'Dart package name, e.g. my_app')
         ..addOption('app-name', help: 'Name shown under the app icon')
         ..addOption('icon', help: 'Square PNG, 1024 px or more')
+        ..addFlag('strict',
+            negatable: false,
+            help: 'In plugin_selection auto mode, fail on calls whose '
+                'plugin cannot be determined')
         ..addFlag('apply', negatable: false, help: 'Write the changes'),
+    )
+    ..addCommand(
+      'detect',
+      ArgParser()
+        ..addOption('www', help: 'Folder to scan (default assets/www)')
+        ..addFlag('strict',
+            negatable: false,
+            help: 'Exit 1 when a call cannot be resolved to a plugin'),
     )
     ..addCommand(
       'icon',
@@ -133,6 +146,10 @@ void main(List<String> args) async {
     case 'rename':
       exitCode = await cli.rename(command);
       break;
+    case 'detect':
+      exitCode = await DetectRunner()
+          .run(www: command['www'] as String?, strict: command['strict'] as bool);
+      break;
     case 'prepare':
       exitCode = await cli.prepare(command);
       break;
@@ -167,6 +184,7 @@ Commands:
             sweetmelon.yaml (--apply to write, --check for CI)
   rename    Change the Android applicationId / iOS bundle id (--id) and the
             Dart package name (--dart-package) (--apply)
+  detect    List the plugins the web app uses (--www dir, --strict)
   prepare   Get a checkout ready to build: inject www, choose plugins, set
             package name, Dart package, app name and icon, then sync (--apply)
   icon      Generate all app icons from a square PNG of 1024 px or more (--apply)
@@ -810,6 +828,7 @@ class SweetmelonCLI {
           icon: args['icon'] as String?,
         ),
         apply: args['apply'] as bool,
+        strict: args['strict'] as bool,
       );
 
   /// `icon <source.png> [--apply] [--force]`
