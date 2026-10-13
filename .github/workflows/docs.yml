@@ -5,6 +5,12 @@ on:
     branches: [main]
     paths:
       - 'docs/**'
+      - '.github/workflows/docs.yml'
+  workflow_dispatch:
+
+# peaceiris/actions-gh-pages pushes the built site to the gh-pages branch.
+permissions:
+  contents: write
 
 jobs:
   deploy:
@@ -16,20 +22,34 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+          cache-dependency-path: docs/package-lock.json
 
       - name: Install dependencies
         working-directory: docs
-        run: npm install
+        run: npm ci
 
       - name: Build VitePress
         working-directory: docs
         run: npm run build
 
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
       - name: Generate Dart API docs
-        run: dart doc . --output docs/.vitepress/dist/dart-api
+        # Best effort: dartdoc 9 currently crashes on this code base
+        # ("RangeError (end)" while precaching local docs), so the site is
+        # published without the API reference until that is fixed.
+        continue-on-error: true
+        run: |
+          flutter pub get
+          dart doc . --output docs/.vitepress/dist/dart-api
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: docs/.vitepress/dist

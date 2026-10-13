@@ -109,7 +109,7 @@ flutter run
 
 ## Next Steps
 
-- [Configuration →](/guide/configuration)
+- [Configuration →](https://github.com/legionir/sweetmelon/blob/main/sweetmelon.yaml)
 - [Browse all 104 plugins →](/plugins/overview)
-- [Angular integration →](/guide/frameworks/angular)
-- [Security guide →](/advanced/security)
+- [Angular integration →](/angular-integration)
+- [Security guide →](/SECURITY)

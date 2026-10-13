@@ -53,22 +53,22 @@ Essential plugins for every app.
 
 | Plugin | JS Name | Category | Events |
 |--------|---------|----------|--------|
-| [Permission](./core/permission) | `permission` | Core | — |
-| [App Lifecycle](./core/app-lifecycle) | `appLifecycle` | Core | ✅ |
-| [Device Info](./core/device-info) | `deviceInfo` | Core | — |
-| [Connectivity](./core/connectivity) | `connectivity` | Core | ✅ |
-| [Storage](./core/storage) | `storage` | Core | — |
-| [File System](./core/file-system) | `fileSystem` | Core | — |
-| [HTTP](./core/http) | `http` | Core | — |
-| [Intent](./core/intent) | `intent` | Core | ✅ |
-| [Clipboard](./core/clipboard) | `clipboard` | Core | — |
-| [Share](./core/share) | `share` | Core | — |
-| [Camera](./media/camera) | `camera` | Media | — |
-| [Camera Preview](./media/camera-preview) | `cameraPreview` | Media | ✅ |
-| [Audio](./media/audio) | `audio` | Media | ✅ |
-| [Video Player](./media/video-player) | `videoPlayer` | Media | ✅ |
-| [QR Scanner](./media/qr-scanner) | `qrScanner` | Media | ✅ |
-| [Document Scanner](./media/document-scanner) | `documentScanner` | Media | — |
+| [Permission](https://github.com/legionir/sweetmelon/blob/main/lib/plugins/permission/README.md) | `permission` | Core | — |
+| [App Lifecycle](https://github.com/legionir/sweetmelon/blob/main/lib/plugins/app_lifecycle/README.md) | `appLifecycle` | Core | ✅ |
+| [Device Info](https://github.com/legionir/sweetmelon/blob/main/lib/plugins/device_info/README.md) | `deviceInfo` | Core | — |
+| [Connectivity](https://github.com/legionir/sweetmelon/blob/main/lib/plugins/connectivity/README.md) | `connectivity` | Core | ✅ |
+| [Storage](https://github.com/legionir/sweetmelon/blob/main/lib/plugins/storage/README.md) | `storage` | Core | — |
+| [File System](https://github.com/legionir/sweetmelon/blob/main/lib/plugins/file_system/README.md) | `fileSystem` | Core | — |
+| [HTTP](https://github.com/legionir/sweetmelon/blob/main/lib/plugins/http_native/README.md) | `http` | Core | — |
+| [Intent](https://github.com/legionir/sweetmelon/blob/main/lib/plugins/intent_link/README.md) | `intent` | Core | ✅ |
+| [Clipboard](https://github.com/legionir/sweetmelon/blob/main/lib/plugins/clipboard/README.md) | `clipboard` | Core | — |
+| [Share](https://github.com/legionir/sweetmelon/blob/main/lib/plugins/share/README.md) | `share` | Core | — |
+| [Camera](https://github.com/legionir/sweetmelon/blob/main/lib/plugins/camera/README.md) | `camera` | Media | — |
+| [Camera Preview](https://github.com/legionir/sweetmelon/blob/main/lib/plugins/camera_preview/README.md) | `cameraPreview` | Media | ✅ |
+| [Audio](https://github.com/legionir/sweetmelon/blob/main/lib/plugins/audio/README.md) | `audio` | Media | ✅ |
+| [Video Player](https://github.com/legionir/sweetmelon/blob/main/lib/plugins/video_player/README.md) | `videoPlayer` | Media | ✅ |
+| [QR Scanner](https://github.com/legionir/sweetmelon/blob/main/lib/plugins/qr_scanner/README.md) | `qrScanner` | Media | ✅ |
+| [Document Scanner](https://github.com/legionir/sweetmelon/blob/main/lib/plugins/document_scanner/README.md) | `documentScanner` | Media | — |
 | ... | ... | ... | ... |
 
 ::: tip Total: 104 plugins

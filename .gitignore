@@ -51,3 +51,7 @@ node_modules/
 # Sweetmelon CLI state: backups written by `sync` / `rename` / `icon` / `bump`
 .sweetmelon/
 pubspec.lock
+
+# Documentation site build output
+docs/.vitepress/dist/
+docs/.vitepress/cache/

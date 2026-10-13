@@ -2,7 +2,8 @@ import { defineConfig } from 'vitepress';
 
 export default defineConfig({
   title: 'Sweetmelon',
-  description: 'Flutter Native Bridge — Run HTML apps with 91 native plugins',
+  base: '/sweetmelon/',
+  description: 'Flutter Native Bridge — Run HTML apps with 104 native plugins',
   
   // SEO
   lang: 'en-US',
