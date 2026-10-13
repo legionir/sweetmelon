@@ -16,8 +16,23 @@ Fixes for an older minor are made on its `release/x.y` branch and tagged there.
 First versioned release.
 
 ### Added
-- `core:` key in `sweetmelon.yaml`; `validate` and `doctor` refuse a project
-  built for another minor.
-- `project.dart_package`, `project.icon` and the `plugin_selection:` section
-  (`mode`, `include`, `exclude`) in `sweetmelon.yaml`.
-- `sweetmelon --version` prints the core version (`lib/core_version.dart`).
+- **Versioning.** `core:` key in `sweetmelon.yaml`; `validate`, `doctor` and
+  `prepare` refuse a project built for another minor. `sweetmelon --version`
+  prints the core version (`lib/core_version.dart`). The release workflow
+  checks the tag against it and publishes this file's section as notes.
+- **GitHub Action** (`uses: legionir/sweetmelon@v2.4.0`): builds an APK, AAB or
+  unsigned iOS app from a `www` folder and a `sweetmelon.yaml`, with signing from
+  repository secrets.
+- `sweetmelon prepare`: injects `www`, selects plugins, sets package name, Dart
+  package, app name and icon, then syncs. Idempotent.
+- `sweetmelon detect` and `plugin_selection` (`mode: auto|manual`, `include`,
+  `exclude`).
+- `sweetmelon init` (new app folder) and `sweetmelon upgrade` (move to another
+  core release).
+- `project.dart_package` and `project.icon` in `sweetmelon.yaml`.
+- Build workflow inputs: app name, and checkboxes for APK, AAB and iOS.
+
+### Fixed
+- `sync` after `rename --dart-package` no longer writes `package:sweetmelon/`
+  imports into the service locator, and plugin imports are found under the
+  renamed package.

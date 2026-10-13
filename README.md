@@ -86,6 +86,17 @@ flutter run
 
 The example loads from the bundled `assets/www` directory — no dev server is required in production builds. During web development you can point the app at a dev URL instead (see `docs/guide/`).
 
+### Four ways to use the core
+
+| Mode | You keep | How |
+| --- | --- | --- |
+| **Action** (`ref`) | `www/`, `sweetmelon.yaml`, icon | `uses: legionir/sweetmelon@v2.4.0` in your workflow. [Guide](docs/guide/build-from-web.md) |
+| **Template** | the same, started from a template | `dart run bin/sweetmelon.dart init ../my-app --package-name com.acme.app --app-name "My App" --apply` |
+| **Clone / fork** | the whole project | Clone or fork at a release tag (`v2.4.0`), write the app, run the build workflow. Take patch releases with `git merge v2.4.1`. |
+| **Package** | your own Flutter shell | `sweetmelon:` as a git dependency (below). |
+
+The core is versioned with [SemVer](https://semver.org): patch releases (`2.4.x`) only fix bugs, so an app pinned to `2.4` is never broken by them; a new minor or major is taken on purpose. See [CHANGELOG.md](CHANGELOG.md) and the [versioning guide](docs/guide/versioning.md).
+
 ### Use the core in your own app
 
 An application keeps its own web UI, Flutter shell, and native projects, and depends on the core as a package:
@@ -96,7 +107,7 @@ dependencies:
   sweetmelon:
     git:
       url: https://github.com/legionir/sweetmelon.git
-      ref: main   # pin a tag or commit for reproducible builds
+      ref: v2.4.0   # an exact tag; patch releases (v2.4.1 ...) only fix bugs
 ```
 
 Then, in the app:
@@ -438,6 +449,11 @@ rename      Change the Android applicationId / iOS bundle id, or the Dart packag
 icon        Generate Android, iOS and web icons from a square PNG (1024 px or more)
               icon assets/icon.png --apply
 bump        Bump the version: build | patch | minor | major (--apply)
+prepare     Get a checkout ready to build: inject www, choose plugins, set package name,
+              Dart package, app name and icon, then sync (--apply)
+detect      List the plugins the web app uses (--www dir, --strict)
+init        Create a new app folder that builds with the core as an Action
+upgrade     Move an app to another core release (--to 2.4.1, --allow-minor, --apply)
 ```
 
 `rename --dart-package` rewrites `name:` in `pubspec.yaml`, the dependency key in the plugin pubspecs and every `package:<old>/` import in `lib`, `test`, `integration_test`, `bin` and `tool` (the CLI sources included, so the renamed project keeps working with `sync`). Without `--id` it leaves the Android and iOS ids alone; with both options it changes both.

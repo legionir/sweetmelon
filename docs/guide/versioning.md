@@ -37,3 +37,17 @@ dependencies:
       url: https://github.com/legionir/sweetmelon.git
       ref: v2.4.0
 ```
+
+## How a release is made
+
+1. Update `CHANGELOG.md` (a `## [x.y.z]` section) and `sweetmelon.yaml` `core:`
+   when the minor changes.
+2. Set `sweetmelonCoreVersion` in `lib/core_version.dart` and `version` in
+   `pubspec.yaml`.
+3. Tag `vx.y.z`. The release workflow stops if the tag and
+   `lib/core_version.dart` differ, or if the changelog has no section for it.
+4. For a new minor, create the branch `release/x.y` from the tag. Fixes for that
+   minor are made there and tagged `vx.y.1`, `vx.y.2`, ...
+
+An app is never moved by a tag it did not ask for: tags are exact, there are no
+floating `v2` or `v2.4` tags.

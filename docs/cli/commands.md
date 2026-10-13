@@ -62,6 +62,55 @@ dart run bin/sweetmelon.dart bump build|patch|minor|major --apply
 
 The version name lives in `project.version` (`sweetmelon.yaml`); the build number is the `+n` part of the pubspec version. Both are written together.
 
+## prepare
+
+Takes a fresh checkout to a buildable project in one step.
+
+```bash
+dart run bin/sweetmelon.dart prepare --www my_www \
+  --package-name com.acme.app --dart-package my_app \
+  --app-name "My App" --icon icon.png --apply
+```
+
+Order: check `core:` -> validate the values -> copy `--www` into `assets/www`
+(the bridge files come from the core) -> choose plugins (`plugin_selection`) ->
+write the values back to `sweetmelon.yaml` -> rename the Android package and the
+Dart package -> icon -> `sync`. Running it twice changes nothing the second time.
+A value on the command line wins over `sweetmelon.yaml`. Without `--apply` it
+prints the plan. Run `flutter pub get` afterwards (the CLI itself lives in the
+renamed package). `--strict` fails on bridge calls that `detect` cannot resolve.
+
+## detect
+
+Lists the plugins a web app uses.
+
+```bash
+dart run bin/sweetmelon.dart detect --www www [--strict]
+```
+
+It reads text: `NativeSDK.camera.x()`, a variable holding `NativeSDK`,
+`const { camera } = NativeSDK`, `plugin: 'camera'`, `call('camera', ...)` and the
+annotation `// sweetmelon:uses camera`. A plugin name built at run time is
+reported with its line: a warning, or exit 1 with `--strict`.
+
+## init
+
+```bash
+dart run bin/sweetmelon.dart init ../my-app --package-name com.acme.app --app-name "My App" --apply
+```
+
+Writes a new app folder (`www/`, `sweetmelon.yaml`, a build workflow pinned to this
+core version). The folder must be empty.
+
+## upgrade
+
+```bash
+dart run bin/sweetmelon.dart upgrade --to 2.4.1 --apply
+```
+
+Sets `core:` and the `legionir/sweetmelon@v...` pins in `.github/workflows`. The
+version is exact. A new minor needs `--allow-minor`, a new major `--allow-major`.
+
 ## Global options
 
 | Option | Meaning |

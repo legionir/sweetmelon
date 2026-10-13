@@ -11,6 +11,7 @@ on:
       - lib/cli/**
       - bin/**
       - tests/fixtures/ref-app/**
+      - examples/**
       - .github/workflows/test-action.yml
   workflow_dispatch:
 
@@ -42,3 +43,25 @@ jobs:
         run: |
           test "${{ steps.build.outputs.package }}" = "com.example.fromaction"
           test -f "${{ steps.build.outputs.file }}"
+
+  template-smoke:
+    # init -> detect --strict -> prepare (dry run) -> upgrade, without a build.
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Create an app and check it
+        run: |
+          set -euo pipefail
+          APP="$RUNNER_TEMP/smoke-app"
+          dart run bin/sweetmelon.dart init "$APP" --package-name com.example.smoke --app-name "Smoke" --apply
+          dart run bin/sweetmelon.dart detect --www "$APP/www" --strict | tee detect.txt
+          grep -q "storage" detect.txt && grep -q "toast" detect.txt
+          cd "$APP"
+          dart run "$GITHUB_WORKSPACE/bin/sweetmelon.dart" upgrade --to 2.4.1 --apply
+          grep -q "sweetmelon@v2.4.1" .github/workflows/build.yml
