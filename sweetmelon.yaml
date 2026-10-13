@@ -14,7 +14,7 @@ core: "2.4"
 project:
   name: sweetmelon
   display_name: Sweetmelon
-  version: 2.4.0
+  version: 2.4.1
   min_sdk: "3.0.0"
 
   # مسیر استاتیک اپلیکیشن وب

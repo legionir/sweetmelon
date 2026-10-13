@@ -90,7 +90,7 @@ The example loads from the bundled `assets/www` directory — no dev server is r
 
 | Mode | You keep | How |
 | --- | --- | --- |
-| **Action** (`ref`) | `www/`, `sweetmelon.yaml`, icon | `uses: legionir/sweetmelon@v2.4.0` in your workflow. [Guide](docs/guide/build-from-web.md) |
+| **Action** (`ref`) | `www/`, `sweetmelon.yaml`, icon | `uses: legionir/sweetmelon@v2.4.1` in your workflow. [Guide](docs/guide/build-from-web.md) |
 | **Template** | the same, started from a template | `dart run bin/sweetmelon.dart init ../my-app --package-name com.acme.app --app-name "My App" --apply` |
 | **Clone / fork** | the whole project | Clone or fork at a release tag (`v2.4.0`), write the app, run the build workflow. Take patch releases with `git merge v2.4.1`. |
 | **Package** | your own Flutter shell | `sweetmelon:` as a git dependency (below). |
@@ -107,7 +107,7 @@ dependencies:
   sweetmelon:
     git:
       url: https://github.com/legionir/sweetmelon.git
-      ref: v2.4.0   # an exact tag; patch releases (v2.4.1 ...) only fix bugs
+      ref: v2.4.1   # an exact tag; patch releases (v2.4.2 ...) only fix bugs
 ```
 
 Then, in the app:
