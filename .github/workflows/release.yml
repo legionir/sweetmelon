@@ -9,6 +9,10 @@ jobs:
   create-release:
     name: Create Release
     runs-on: ubuntu-latest
+    # The default GITHUB_TOKEN is read-only in this repository, which made
+    # "Create GitHub Release" fail with 403 (v2.4.0, v2.4.1).
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,5 +45,8 @@ jobs:
           tag: ${{ github.ref_name }}
           name: Sweetmelon ${{ github.ref_name }}
           bodyFile: release-notes.md
+          # A release created by hand from the tag gets its notes filled in
+          # instead of failing with "already exists".
+          allowUpdates: true
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }}
