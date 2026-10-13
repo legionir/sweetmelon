@@ -44,6 +44,10 @@ void main(List<String> args) async {
         ..addOption('id',
             help: 'New application id, e.g. com.acme.app. Defaults to '
                 'project.application_id')
+        ..addOption('dart-package',
+            help: 'New Dart package name, e.g. my_app. Renames pubspec name '
+                'and all package imports; without --id the application id '
+                'is left alone')
         ..addFlag('apply', negatable: false, help: 'Write the changes')
         ..addFlag('force',
             negatable: false, help: 'Write even with uncommitted git changes'),
@@ -143,7 +147,8 @@ Commands:
   doctor    Check project health and dependencies
   sync      Sync pubspec, permissions, app name and web titles with
             sweetmelon.yaml (--apply to write, --check for CI)
-  rename    Change the Android applicationId and iOS bundle id (--id, --apply)
+  rename    Change the Android applicationId / iOS bundle id (--id) and the
+            Dart package name (--dart-package) (--apply)
   icon      Generate all app icons from a square PNG of 1024 px or more (--apply)
   bump      Bump the version: build | patch | minor | major (--apply)
 
@@ -162,6 +167,7 @@ Examples:
   dart run bin/sweetmelon.dart sync --apply
   dart run bin/sweetmelon.dart sync --check
   dart run bin/sweetmelon.dart rename --id com.acme.app --apply
+  dart run bin/sweetmelon.dart rename --dart-package my_app --apply
   dart run bin/sweetmelon.dart icon assets/icon.png --apply
   dart run bin/sweetmelon.dart bump patch --apply
 ''');
@@ -745,12 +751,25 @@ class SweetmelonCLI {
     );
   }
 
-  /// `rename [--id <id>] [--apply] [--force]`
-  Future<int> rename(ArgResults args) => RenameRunner().run(
-        newId: args['id'] as String?,
-        apply: args['apply'] as bool,
-        force: args['force'] as bool,
-      );
+  /// `rename [--id <id>] [--dart-package <name>] [--apply] [--force]`
+  ///
+  /// With `--dart-package` only the Dart package is renamed, unless `--id` is
+  /// given too. Without either option the application id from sweetmelon.yaml
+  /// is applied.
+  Future<int> rename(ArgResults args) async {
+    final dartPackage = args['dart-package'] as String?;
+    final newId = args['id'] as String?;
+    final apply = args['apply'] as bool;
+    final force = args['force'] as bool;
+
+    if (dartPackage == null || newId != null) {
+      final code =
+          await RenameRunner().run(newId: newId, apply: apply, force: force);
+      if (code != 0 || dartPackage == null) return code;
+    }
+    return DartPackageRenameRunner()
+        .run(dartPackage, apply: apply, force: force);
+  }
 
   /// `icon <source.png> [--apply] [--force]`
   Future<int> icon(ArgResults args) async {

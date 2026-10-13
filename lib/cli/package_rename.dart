@@ -230,3 +230,160 @@ RegExp _wholeIdentifier(String id) {
 /// Exposed for tests.
 String renameIdentifierInText(String text, String oldId, String newId) =>
     text.replaceAll(_wholeIdentifier(oldId), newId);
+
+// ── Dart package name ──────────────────────────────────────────────────────
+
+/// Dart reserved words; a package name must not be one of them.
+const _dartReservedWords = <String>{
+  'assert',
+  'break',
+  'case',
+  'catch',
+  'class',
+  'const',
+  'continue',
+  'default',
+  'do',
+  'else',
+  'enum',
+  'extends',
+  'false',
+  'final',
+  'finally',
+  'for',
+  'if',
+  'in',
+  'is',
+  'new',
+  'null',
+  'rethrow',
+  'return',
+  'super',
+  'switch',
+  'this',
+  'throw',
+  'true',
+  'try',
+  'var',
+  'void',
+  'while',
+  'with',
+};
+
+/// Top-level folders whose Dart and JSON files can mention the package name.
+const dartRenameRoots = <String>[
+  'lib',
+  'test',
+  'integration_test',
+  'bin',
+  'tool'
+];
+
+final _dartPackagePattern = RegExp(r'^[a-z][a-z0-9_]*$');
+
+/// Returns a problem description, or null when [name] can be used as a Dart
+/// package name. [declared] holds the package names the pubspec already
+/// depends on, which the new name must not collide with.
+String? validateDartPackageName(
+  String name, {
+  Set<String> declared = const <String>{},
+}) {
+  if (!_dartPackagePattern.hasMatch(name)) {
+    return 'Dart package name "$name" must use lowercase letters, digits and '
+        'underscores, and start with a letter';
+  }
+  if (_dartReservedWords.contains(name)) {
+    return 'Dart package name "$name" is a reserved word';
+  }
+  if (declared.contains(name) || name == 'flutter' || name == 'dart') {
+    return 'Dart package name "$name" is already used by a dependency';
+  }
+  return null;
+}
+
+/// Reads `name: <package>` from the top level of a pubspec.yaml text.
+String? readPubspecName(String pubspec) {
+  final match = RegExp(r'^name:\s*([A-Za-z0-9_]+)\s*$', multiLine: true)
+      .firstMatch(pubspec);
+  return match?.group(1);
+}
+
+/// The files that change when the Dart package name changes.
+class DartRenamePlan {
+  const DartRenamePlan({
+    required this.oldName,
+    required this.newName,
+    required this.files,
+  });
+
+  final String oldName;
+  final String newName;
+
+  /// Project-relative path -> new content. Only files that change.
+  final Map<String, String> files;
+
+  bool get isEmpty => files.isEmpty;
+}
+
+/// Plans a rename of the Dart package.
+///
+/// [texts] maps project-relative paths (with '/') to file content. It should
+/// hold `pubspec.yaml`, every `pubspec.yaml` under `lib/`, and the `.dart` and
+/// `.json` files under [dartRenameRoots]. Other paths are ignored.
+///
+/// What changes:
+/// - the top-level `name:` of the root `pubspec.yaml`;
+/// - the dependency key in nested pubspec.yaml files (plugins depend on the
+///   application package by name);
+/// - every `package:<old>/` in `.dart` and `.json` files. That includes the
+///   CLI sources in `lib/cli`, which generate and read such imports, so the
+///   renamed project keeps working with `sweetmelon sync`.
+DartRenamePlan planDartPackageRename({
+  required String oldName,
+  required String newName,
+  required Map<String, String> texts,
+}) {
+  if (oldName == newName) {
+    throw const FormatException(
+        'the new Dart package name is the same as the old');
+  }
+  final declared = <String>{};
+  final rootPubspec = texts['pubspec.yaml'];
+  if (rootPubspec != null) {
+    final dep = RegExp(r'^  ([a-z0-9_]+):', multiLine: true);
+    for (final m in dep.allMatches(rootPubspec)) {
+      declared.add(m.group(1)!);
+    }
+  }
+  final problem = validateDartPackageName(newName, declared: declared);
+  if (problem != null) throw FormatException(problem);
+
+  final importRe = RegExp('package:${RegExp.escape(oldName)}/');
+  final nameLine =
+      RegExp('^name:\\s*${RegExp.escape(oldName)}\\s*\$', multiLine: true);
+  final dependencyKey =
+      RegExp('^(\\s+)${RegExp.escape(oldName)}:', multiLine: true);
+
+  final files = <String, String>{};
+  final paths = texts.keys.toList()..sort();
+  for (final path in paths) {
+    final original = texts[path]!;
+    String? edited;
+    if (path == 'pubspec.yaml') {
+      edited = original.replaceAll(nameLine, 'name: $newName');
+    } else if (path.startsWith('lib/') && path.endsWith('/pubspec.yaml')) {
+      edited = original.replaceAllMapped(
+          dependencyKey, (m) => '${m.group(1)}$newName:');
+    } else if (_isDartRenameSource(path)) {
+      edited = original.replaceAll(importRe, 'package:$newName/');
+    }
+    if (edited != null && edited != original) files[path] = edited;
+  }
+  return DartRenamePlan(oldName: oldName, newName: newName, files: files);
+}
+
+bool _isDartRenameSource(String path) {
+  final top = path.split('/').first;
+  if (!dartRenameRoots.contains(top)) return false;
+  return path.endsWith('.dart') || path.endsWith('.json');
+}

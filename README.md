@@ -432,16 +432,19 @@ clean       Clean build artifacts
 doctor      Environment and project checks (exit 1 on failure)
 sync        Sync pubspec, permissions, app name and web titles with sweetmelon.yaml
               --apply writes, --check exits 1 when files are out of date
-rename      Change the Android applicationId and iOS bundle id
+rename      Change the Android applicationId / iOS bundle id, or the Dart package name
               --id com.acme.app --apply
+              --dart-package my_app --apply   (then run flutter pub get)
 icon        Generate Android, iOS and web icons from a square PNG (1024 px or more)
               icon assets/icon.png --apply
 bump        Bump the version: build | patch | minor | major (--apply)
 ```
 
+`rename --dart-package` rewrites `name:` in `pubspec.yaml`, the dependency key in the plugin pubspecs and every `package:<old>/` import in `lib`, `test`, `integration_test`, `bin` and `tool` (the CLI sources included, so the renamed project keeps working with `sync`). Without `--id` it leaves the Android and iOS ids alone; with both options it changes both.
+
 `sync`, `rename`, `icon`, `bump` and `configure` write through one safe writer: a dry run by default (`--apply` to write), a refusal when git has uncommitted changes (`--force` to override), a backup under `.sweetmelon/backup/`, and rollback when a write fails.
 
-Plugin switches in `sweetmelon.yaml`: `sync` removes unused pubspec dependencies of disabled plugins and the registry-managed permissions they need, and `doctor` reports plugins that are disabled but still imported. `sweetmelon.yaml` is the single source of truth: `configure` regenerates `service_locator.dart` from its `enabled` flags, and `sync --check` fails when pubspec, permissions or titles differ from it.
+Plugin switches in `sweetmelon.yaml` (`plugin enable <name>` / `plugin disable <name>` flip them): `sync` adds the pubspec dependencies of enabled plugins that are not declared yet (plain version constraints from the plugin's own `pubspec.yaml`; existing entries are never changed), removes unused ones of disabled plugins, and adds or removes the registry-managed permissions. `doctor` reports plugins that are disabled but still imported. `sweetmelon.yaml` is the single source of truth: `configure` regenerates `service_locator.dart` from its `enabled` flags, and `sync --check` fails when pubspec, permissions or titles differ from it.
 
 ---
 

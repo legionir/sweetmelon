@@ -76,6 +76,7 @@ class SyncRunner {
     final project = await _readProject();
     final enabled = await _readEnabled();
     final pluginDeps = await _pluginDeps();
+    final pluginConstraints = await _pluginConstraints();
     final files = await _appCodeFiles();
     final report = <String>[];
     final warnings = <String>[];
@@ -187,8 +188,31 @@ class SyncRunner {
         neededPackages: closure.neededPackages,
       );
       text = result.text;
+
+      // Packages of enabled plugins that the pubspec does not declare yet,
+      // for example after `sweetmelon plugin enable <plugin>`.
+      final wanted = <String, String>{};
+      for (final dir in (closure.activeDirs.toList()..sort())) {
+        pluginConstraints[dir]?.forEach((name, constraint) {
+          if (pluginDeps.containsKey(name)) return; // local plugin
+          final existing = wanted[name];
+          if (existing == null) {
+            wanted[name] = constraint;
+          } else if (existing != constraint) {
+            warnings.add('plugins ask for different versions of $name '
+                '($existing and $constraint); using $existing');
+          }
+        });
+      }
+      final addition = addMissingDependencies(text, wanted: wanted);
+      text = addition.text;
+
+      final changesSummary = [
+        if (addition.added.isNotEmpty) '+${addition.added.join(', ')}',
+        if (result.removed.isNotEmpty) '-${result.removed.join(', ')}',
+      ];
       report.add('dependencies: '
-          '${result.removed.isEmpty ? 'no change' : '-${result.removed.join(', ')}'}');
+          '${changesSummary.isEmpty ? 'no change' : changesSummary.join(' ')}');
 
       final current = readPubspecVersion(text);
       if (project.version.isNotEmpty && current != null) {
@@ -433,6 +457,31 @@ class SyncRunner {
         deps = dependencyNames(section is YamlMap ? section : null);
       }
       result[p.basename(entity.path)] = deps;
+    }
+    return result;
+  }
+
+  /// Plugin directory name -> external packages with a plain version
+  /// constraint (`name: ^1.2.3`) from the plugin's pubspec.yaml. Path, git and
+  /// SDK dependencies are not copied into the application pubspec.
+  Future<Map<String, Map<String, String>>> _pluginConstraints() async {
+    final result = <String, Map<String, String>>{};
+    final dir = Directory(p.join(root, 'lib', 'plugins'));
+    if (!await dir.exists()) return result;
+    await for (final entity in dir.list()) {
+      if (entity is! Directory) continue;
+      final pubspec = File(p.join(entity.path, _pubspec));
+      if (!await pubspec.exists()) continue;
+      final doc = loadYaml(await pubspec.readAsString());
+      final section = doc is YamlMap ? doc['dependencies'] : null;
+      if (section is! YamlMap) continue;
+      final constraints = <String, String>{};
+      section.forEach((key, value) {
+        if (value is String && value.trim().isNotEmpty) {
+          constraints[key.toString()] = value.trim();
+        }
+      });
+      result[p.basename(entity.path)] = constraints;
     }
     return result;
   }

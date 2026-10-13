@@ -4,6 +4,11 @@ import 'package:sweetmelon/cli/package_rename.dart';
 const _old = 'com.core.sweetmelon';
 const _new = 'com.acme.app';
 
+// Built from two literals so that `rename --dart-package` does not rewrite the
+// fixtures of this very test when someone renames the package of a project
+// that contains the framework tests.
+const _oldPkg = 'package:' 'sweetmelon' '/';
+
 void main() {
   group('validateApplicationId', () {
     test('accepts a normal id', () {
@@ -93,5 +98,82 @@ void main() {
       () => planPackageRename(oldId: _old, newId: 'Bad.Id', texts: {}),
       throwsFormatException,
     );
+  });
+
+  group('Dart package rename', () {
+    test('validateDartPackageName', () {
+      expect(validateDartPackageName('my_app'), isNull);
+      expect(validateDartPackageName('MyApp'), isNotNull);
+      expect(validateDartPackageName('1app'), isNotNull);
+      expect(validateDartPackageName('my-app'), isNotNull);
+      expect(validateDartPackageName('class'), isNotNull);
+      expect(validateDartPackageName('flutter'), isNotNull);
+      expect(validateDartPackageName('path', declared: {'path'}), isNotNull);
+    });
+
+    test('readPubspecName reads only the top-level name', () {
+      expect(readPubspecName('name: demo\nflutter:\n  name: other\n'), 'demo');
+      expect(readPubspecName('flutter:\n  name: other\n'), isNull);
+    });
+
+    final texts = <String, String>{
+      'pubspec.yaml': 'name: sweetmelon\ndependencies:\n  path: ^1.9.0\n',
+      'lib/main.dart': "import '${_oldPkg}app.dart';\n"
+          "import 'package:path/path.dart';\n",
+      'lib/plugins/x/pubspec.yaml':
+          'name: x\ndependencies:\n  sweetmelon:\n    path: ../../..\n',
+      'lib/plugins/x/lib/x.dart': "import '${_oldPkg}plugins/y.dart';\n",
+      'test/a_test.dart': "import '${_oldPkg}a.dart';\n",
+      'tool/plugin_catalog.json': '{"import": "${_oldPkg}plugins/x"}',
+      'docs/guide.md': '${_oldPkg} in docs is left alone',
+      'android/app/build.gradle.kts': '${_oldPkg} outside the roots',
+    };
+
+    test('renames name, nested dependency key and package imports', () {
+      final plan = planDartPackageRename(
+          oldName: 'sweetmelon', newName: 'my_app', texts: texts);
+      expect(plan.files['pubspec.yaml'], startsWith('name: my_app\n'));
+      expect(plan.files['lib/main.dart'],
+          "import 'package:my_app/app.dart';\nimport 'package:path/path.dart';\n");
+      expect(plan.files['lib/plugins/x/pubspec.yaml'],
+          contains('  my_app:\n    path: ../../..'));
+      expect(plan.files['lib/plugins/x/lib/x.dart'],
+          "import 'package:my_app/plugins/y.dart';\n");
+      expect(plan.files['test/a_test.dart'], contains('package:my_app/a.dart'));
+      expect(plan.files['tool/plugin_catalog.json'],
+          contains('package:my_app/plugins/x'));
+    });
+
+    test('leaves files outside the renamed roots alone', () {
+      final plan = planDartPackageRename(
+          oldName: 'sweetmelon', newName: 'my_app', texts: texts);
+      expect(plan.files.keys, isNot(contains('docs/guide.md')));
+      expect(plan.files.keys, isNot(contains('android/app/build.gradle.kts')));
+    });
+
+    test('does not mistake a longer package name for the old one', () {
+      final plan = planDartPackageRename(
+        oldName: 'sweetmelon',
+        newName: 'my_app',
+        texts: {
+          'pubspec.yaml': 'name: sweetmelon\n',
+          'lib/a.dart': "import 'package:sweetmelon_extra/a.dart';\n",
+        },
+      );
+      expect(plan.files.keys, ['pubspec.yaml']);
+    });
+
+    test('rejects a name used by a dependency and an unchanged name', () {
+      expect(
+        () => planDartPackageRename(
+            oldName: 'sweetmelon', newName: 'path', texts: texts),
+        throwsFormatException,
+      );
+      expect(
+        () => planDartPackageRename(
+            oldName: 'sweetmelon', newName: 'sweetmelon', texts: texts),
+        throwsFormatException,
+      );
+    });
   });
 }

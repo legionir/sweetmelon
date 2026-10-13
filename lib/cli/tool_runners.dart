@@ -251,6 +251,91 @@ class RenameRunner {
   }
 }
 
+/// `sweetmelon rename --dart-package my_app`.
+///
+/// Changes the Dart package name: `name:` in pubspec.yaml, the dependency key
+/// in plugin pubspecs and every `package:<old>/` import (see
+/// [planDartPackageRename]). Run `flutter pub get` afterwards, which rewrites
+/// pubspec.lock and .dart_tool.
+class DartPackageRenameRunner {
+  DartPackageRenameRunner({this.root = '.'});
+
+  final String root;
+
+  Future<int> run(
+    String newName, {
+    bool apply = false,
+    bool force = false,
+  }) async {
+    final pubspec = File(p.join(root, pubspecYaml));
+    if (!await pubspec.exists()) {
+      print('$pubspecYaml not found');
+      return 1;
+    }
+    final oldName = readPubspecName(await pubspec.readAsString());
+    if (oldName == null) {
+      print('name not found in $pubspecYaml');
+      return 1;
+    }
+    if (oldName == newName) {
+      print('Already $oldName: nothing to rename');
+      return 0;
+    }
+
+    final texts = await _readTexts();
+    final DartRenamePlan plan;
+    try {
+      plan = planDartPackageRename(
+          oldName: oldName, newName: newName, texts: texts);
+    } on FormatException catch (e) {
+      print(e.message);
+      return 1;
+    }
+
+    print('Rename Dart package $oldName -> $newName '
+        '(${plan.files.length} files)');
+    final writer = _writer(root, apply, force);
+    for (final entry in plan.files.entries) {
+      writer.replace(entry.key, entry.value);
+    }
+    final code = await _finish(writer, apply);
+    if (code == 0 && apply && !plan.isEmpty) {
+      print('Next: flutter pub get');
+    }
+    return code;
+  }
+
+  Future<Map<String, String>> _readTexts() async {
+    final texts = <String, String>{};
+    Future<void> read(File file) async {
+      final relative = p.relative(file.path, from: root).replaceAll('\\', '/');
+      try {
+        texts[relative] = await file.readAsString();
+      } on Exception {
+        // Not valid UTF-8: not a candidate.
+      }
+    }
+
+    final rootPubspec = File(p.join(root, pubspecYaml));
+    if (await rootPubspec.exists()) await read(rootPubspec);
+    for (final top in dartRenameRoots) {
+      final dir = Directory(p.join(root, top));
+      if (!await dir.exists()) continue;
+      await for (final entity in dir.list(recursive: true)) {
+        if (entity is! File) continue;
+        final name = p.basename(entity.path);
+        final isNestedPubspec = top == 'lib' && name == pubspecYaml;
+        if (isNestedPubspec ||
+            entity.path.endsWith('.dart') ||
+            entity.path.endsWith('.json')) {
+          await read(entity);
+        }
+      }
+    }
+    return texts;
+  }
+}
+
 /// `sweetmelon doctor` project checks (see project_doctor.dart).
 class DoctorRunner {
   DoctorRunner({this.root = '.'});
