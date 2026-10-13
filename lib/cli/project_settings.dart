@@ -7,6 +7,8 @@ class ProjectSettings {
     required this.displayName,
     required this.version,
     this.applicationId,
+    this.dartPackage,
+    this.icon,
   });
 
   final String name;
@@ -20,6 +22,21 @@ class ProjectSettings {
   /// the key is not set.
   final String? applicationId;
 
+  /// Dart package name (`name:` in pubspec.yaml), e.g. `my_app`. Null when the
+  /// key is not set.
+  final String? dartPackage;
+
+  /// Path of the app icon (a square PNG of 1024 px or more), relative to the
+  /// folder of sweetmelon.yaml. Null when the key is not set.
+  final String? icon;
+
+  /// The `core:` value (`2.4` or `2.4.1`), or null when the file has none.
+  static String? readCore(String text) {
+    final doc = loadYaml(text);
+    final value = doc is YamlMap ? doc['core'] : null;
+    return value?.toString().trim();
+  }
+
   /// Reads the `project:` section. Missing values are empty strings.
   static ProjectSettings fromYaml(String text) {
     final doc = loadYaml(text);
@@ -31,11 +48,15 @@ class ProjectSettings {
     }
 
     final appId = read('application_id');
+    final dartPackage = read('dart_package');
+    final icon = read('icon');
     return ProjectSettings(
       name: read('name'),
       displayName: read('display_name'),
       version: read('version').split('+').first,
       applicationId: appId.isEmpty ? null : appId,
+      dartPackage: dartPackage.isEmpty ? null : dartPackage,
+      icon: icon.isEmpty ? null : icon,
     );
   }
 }

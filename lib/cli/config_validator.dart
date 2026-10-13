@@ -1,5 +1,8 @@
 import 'package:yaml/yaml.dart';
 
+import 'core_compat.dart';
+import 'package_rename.dart';
+
 enum IssueSeverity { error, warning }
 
 class ConfigIssue {
@@ -29,7 +32,7 @@ class ConfigValidator {
   /// When null, unknown plugin keys are not reported.
   final Set<String>? knownPluginKeys;
 
-  static const _rootKeys = {'project', 'plugins'};
+  static const _rootKeys = {'core', 'project', 'plugins', 'plugin_selection'};
 
   static const _projectKeys = {
     'name',
@@ -37,6 +40,8 @@ class ConfigValidator {
     'version',
     'min_sdk',
     'application_id',
+    'dart_package',
+    'icon',
     'www_path',
     'entry_point',
   };
@@ -63,6 +68,7 @@ class ConfigValidator {
     final root = parsed;
 
     _checkUnknownKeys(root, _rootKeys, 'the top level', issues);
+    _checkCore(root, issues);
 
     final project = root['project'];
     if (project is YamlMap) {
@@ -73,6 +79,19 @@ class ConfigValidator {
         'missing "project" mapping',
         line: _line(root, 'project'),
       ));
+    }
+
+    final selection = root['plugin_selection'];
+    if (selection != null) {
+      if (selection is YamlMap) {
+        _checkSelection(selection, issues);
+      } else {
+        issues.add(ConfigIssue(
+          IssueSeverity.error,
+          'plugin_selection must be a mapping with mode, include and exclude',
+          line: _line(root, 'plugin_selection'),
+        ));
+      }
     }
 
     final plugins = root['plugins'];
@@ -95,6 +114,81 @@ class ConfigValidator {
     } catch (e) {
       issues.add(ConfigIssue(IssueSeverity.error, 'invalid YAML: $e'));
       return null;
+    }
+  }
+
+  void _checkCore(YamlMap root, List<ConfigIssue> issues) {
+    final core = root['core'];
+    if (core == null) {
+      issues.add(const ConfigIssue(
+        IssueSeverity.warning,
+        'no "core:" version; add core: "2.4" to pin the core release this '
+        'project is built for',
+      ));
+      return;
+    }
+    final problem = checkCoreCompatibility(core.toString());
+    if (problem != null) {
+      issues.add(ConfigIssue(
+        IssueSeverity.error,
+        problem,
+        line: _line(root, 'core'),
+      ));
+    }
+  }
+
+  void _checkSelection(YamlMap selection, List<ConfigIssue> issues) {
+    _checkUnknownKeys(selection, const {'mode', 'include', 'exclude'},
+        'plugin_selection', issues);
+
+    final mode = selection['mode'];
+    if (mode != null && mode != 'auto' && mode != 'manual') {
+      issues.add(ConfigIssue(
+        IssueSeverity.error,
+        'plugin_selection.mode must be auto or manual',
+        line: _line(selection, 'mode'),
+      ));
+    }
+
+    final lists = <String, List<String>>{};
+    for (final key in ['include', 'exclude']) {
+      final value = selection[key];
+      if (value == null) continue;
+      if (value is! YamlList || value.any((v) => v is! String)) {
+        issues.add(ConfigIssue(
+          IssueSeverity.error,
+          'plugin_selection.$key must be a list of plugin names',
+          line: _line(selection, key),
+        ));
+        continue;
+      }
+      lists[key] = [for (final v in value) v as String];
+      final known = knownPluginKeys;
+      if (known == null) continue;
+      for (final name in lists[key]!) {
+        if (!known.contains(name)) {
+          final suggestion = _closest(name, known);
+          final hint =
+              suggestion == null ? '' : ' - did you mean "$suggestion"?';
+          issues.add(ConfigIssue(
+            IssueSeverity.error,
+            'plugin_selection.$key: unknown plugin "$name"$hint',
+            line: _line(selection, key),
+          ));
+        }
+      }
+    }
+
+    final both = (lists['include'] ?? const <String>[])
+        .toSet()
+        .intersection((lists['exclude'] ?? const <String>[]).toSet());
+    if (both.isNotEmpty) {
+      issues.add(ConfigIssue(
+        IssueSeverity.error,
+        'plugin_selection: ${(both.toList()..sort()).join(', ')} is in both '
+        'include and exclude',
+        line: _line(selection, 'include'),
+      ));
     }
   }
 
@@ -126,6 +220,30 @@ class ConfigValidator {
         IssueSeverity.error,
         'project.version must look like 1.2.3 or 1.2.3+4 (quote it if needed)',
         line: _line(project, 'version'),
+      ));
+    }
+
+    final dartPackage = project['dart_package'];
+    if (dartPackage != null) {
+      final problem = dartPackage is String
+          ? validateDartPackageName(dartPackage)
+          : 'project.dart_package must be a package name such as my_app';
+      if (problem != null) {
+        issues.add(ConfigIssue(
+          IssueSeverity.error,
+          problem,
+          line: _line(project, 'dart_package'),
+        ));
+      }
+    }
+
+    final icon = project['icon'];
+    if (icon != null &&
+        (icon is! String || !icon.toLowerCase().endsWith('.png'))) {
+      issues.add(ConfigIssue(
+        IssueSeverity.error,
+        'project.icon must be the path of a PNG file',
+        line: _line(project, 'icon'),
       ));
     }
 

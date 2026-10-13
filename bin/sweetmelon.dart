@@ -2,6 +2,7 @@
 import 'dart:io';
 import 'package:args/args.dart';
 import 'package:yaml/yaml.dart';
+import 'package:sweetmelon/core_version.dart';
 import 'package:sweetmelon/cli/config_processor.dart';
 import 'package:sweetmelon/cli/config_validator.dart';
 import 'package:sweetmelon/cli/plugin_catalog.dart';
@@ -72,7 +73,7 @@ void main(List<String> args) async {
   final results = parser.parse(args);
 
   if (results['version'] as bool) {
-    print('Sweetmelon CLI v1.0.0');
+    print('Sweetmelon CLI v$sweetmelonCoreVersion');
     return;
   }
 

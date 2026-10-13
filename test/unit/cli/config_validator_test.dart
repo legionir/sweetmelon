@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sweetmelon/cli/config_validator.dart';
 
 const _valid = '''
+core: "2.4"
+
 project:
   name: demo_app
   version: 1.2.3+4
@@ -33,7 +35,7 @@ void main() {
       expect(issues, hasLength(1));
       expect(issues.single.isError, isTrue);
       expect(issues.single.message, contains('project.name'));
-      expect(issues.single.line, 2);
+      expect(issues.single.line, 4);
     });
 
     test('rejects a version that is not semantic', () {
@@ -83,7 +85,7 @@ void main() {
           run(_valid.replaceFirst('enabled: true', 'enabled: "yes"'));
       expect(issues.single.isError, isTrue);
       expect(issues.single.message, contains('enabled must be true or false'));
-      expect(issues.single.line, 9);
+      expect(issues.single.line, 11);
     });
 
     test('accepts a plugin with no settings (treated as enabled)', () {

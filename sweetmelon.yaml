@@ -6,6 +6,11 @@
 #   - permission‌های سیستمی از Manifest / Info.plist حذف می‌شود
 #   - از native-sdk.js سبک‌سازی می‌شود
 
+# Release of the Sweetmelon core this project is built for. A new minor or major
+# release is never picked up silently; change this on purpose after reading
+# CHANGELOG.md.
+core: "2.4"
+
 project:
   name: sweetmelon
   display_name: Sweetmelon

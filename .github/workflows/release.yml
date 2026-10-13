@@ -14,34 +14,32 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Generate changelog
-        id: changelog
+      - name: Check tag against the code
         run: |
-          PREV_TAG=$(git describe --abbrev=0 --tags HEAD^ 2>/dev/null || echo "")
-          if [ -n "$PREV_TAG" ]; then
-            CHANGELOG=$(git log $PREV_TAG..HEAD --pretty=format:"- %s (%h)" --no-merges)
-          else
-            CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges -20)
+          VERSION=$(sed -n "s/.*sweetmelonCoreVersion = '\(.*\)';/\1/p" lib/core_version.dart)
+          if [ "v$VERSION" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match lib/core_version.dart (v$VERSION)"
+            exit 1
           fi
-          echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          echo "$CHANGELOG" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Extract release notes from CHANGELOG.md
+        run: |
+          awk -v v="$VERSION" '
+            $0 ~ "^## \\[" v "\\]" { on=1; next }
+            on && /^## \[/ { exit }
+            on { print }
+          ' CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "::error::CHANGELOG.md has no section for $VERSION"
+            exit 1
+          fi
 
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ github.ref_name }}
           name: Sweetmelon ${{ github.ref_name }}
-          body: |
-            ## 🍈 Sweetmelon ${{ github.ref_name }}
-            
-            ### Changes
-            ${{ steps.changelog.outputs.changelog }}
-            
-            ### Installation
-            ```bash
-            flutter pub get
-            flutter run
-            ```
+          bodyFile: release-notes.md
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }}
