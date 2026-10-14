@@ -319,7 +319,7 @@ class PluginRegistryData {
       registrationCode: "AudioPlugin(eventEmitter: emitter)",
       needsEmitter: true,
       dependencies: {
-        'record': '^5.1.2',
+        'record': '^6.2.1',
         'audioplayers': '^6.1.0',
       },
       androidPermissions: [

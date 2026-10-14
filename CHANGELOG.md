@@ -11,6 +11,13 @@ pins a core release in `sweetmelon.yaml` (`core: "2.4"`).
 
 Fixes for an older minor are made on its `release/x.y` branch and tagged there.
 
+## [2.4.2]
+
+### Fixed
+- **Audio plugin build.** `record` is now `^6.2.1` (was `^5.1.2`). With 5.x, pub
+  paired `record_linux 0.7.2` with `record_platform_interface 1.6.0` and the
+  Flutter compile failed (`RecordLinux` missing `startStream`).
+
 ## [2.4.0]
 
 First versioned release.
