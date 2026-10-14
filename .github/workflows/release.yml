@@ -9,6 +9,10 @@ jobs:
   create-release:
     name: Create Release
     runs-on: ubuntu-latest
+    # Creating a release needs write access; the default token is read-only
+    # ("403 Resource not accessible by integration").
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,5 +45,7 @@ jobs:
           tag: ${{ github.ref_name }}
           name: Sweetmelon ${{ github.ref_name }}
           bodyFile: release-notes.md
+          # The release may already exist (created by hand from the tag): update it.
+          allowUpdates: true
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }}
