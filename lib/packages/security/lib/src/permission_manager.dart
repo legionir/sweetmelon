@@ -84,6 +84,8 @@ class NativePermissionProvider implements PermissionProvider {
         return ph.Permission.contacts;
       case 'bluetooth':
         return ph.Permission.bluetooth;
+      case 'phone':
+        return ph.Permission.phone;
       default:
         BridgeLogger.warn(
           'PermissionProvider',

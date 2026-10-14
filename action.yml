@@ -2,7 +2,7 @@ name: Sweetmelon build
 description: >
   Builds an Android APK / AAB or an unsigned iOS app from a web app (HTML/JS)
   with the Sweetmelon core release this action is pinned to
-  (uses: legionir/sweetmelon@v2.4.0). Plugins, permissions, package name,
+  (uses: legionir/sweetmelon@v2.5.2). Plugins, permissions, package name,
   Dart package, app name and icon follow sweetmelon.yaml.
 author: legionir
 
