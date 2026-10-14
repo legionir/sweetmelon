@@ -85,7 +85,7 @@ void main() {
           ..createSync(recursive: true)
           ..writeAsStringSync(text.replaceAll(
               'legionir/sweetmelon@v$sweetmelonCoreVersion',
-              'legionir/sweetmelon@v2.4.0'));
+              'legionir/sweetmelon@v2.5.0'));
       });
     });
     tearDown(() => dir.deleteSync(recursive: true));
@@ -95,25 +95,25 @@ void main() {
             .readAsStringSync();
 
     test('a patch release changes the pins', () async {
-      expect(await UpgradeRunner(root: dir.path).run('2.4.1', apply: true), 0);
-      expect(workflowText(), contains('@v2.4.1'));
-      expect(workflowText(), isNot(contains('@v2.4.0')));
+      expect(await UpgradeRunner(root: dir.path).run('2.5.1', apply: true), 0);
+      expect(workflowText(), contains('@v2.5.1'));
+      expect(workflowText(), isNot(contains('@v2.5.0')));
     });
 
     test('a new minor or major needs a flag', () async {
       final runner = UpgradeRunner(root: dir.path);
-      expect(await runner.run('2.5.0', apply: true), 1);
+      expect(await runner.run('2.6.0', apply: true), 1);
       expect(await runner.run('3.0.0', apply: true, allowMinor: true), 1);
-      expect(workflowText(), contains('@v2.4.0'));
-      expect(await runner.run('2.5.0', apply: true, allowMinor: true), 0);
+      expect(workflowText(), contains('@v2.5.0'));
+      expect(await runner.run('2.6.0', apply: true, allowMinor: true), 0);
       final yaml = File(p.join(dir.path, 'sweetmelon.yaml')).readAsStringSync();
-      expect(yaml, contains('core: "2.5"'));
+      expect(yaml, contains('core: "2.6"'));
     });
 
     test('a dry run writes nothing and a loose version is refused', () async {
-      expect(await UpgradeRunner(root: dir.path).run('2.4.1'), 0);
-      expect(workflowText(), contains('@v2.4.0'));
-      expect(await UpgradeRunner(root: dir.path).run('2.4'), 64);
+      expect(await UpgradeRunner(root: dir.path).run('2.5.1'), 0);
+      expect(workflowText(), contains('@v2.5.0'));
+      expect(await UpgradeRunner(root: dir.path).run('2.5'), 64);
     });
   });
 }

@@ -9,12 +9,12 @@
 # Release of the Sweetmelon core this project is built for. A new minor or major
 # release is never picked up silently; change this on purpose after reading
 # CHANGELOG.md.
-core: "2.4"
+core: "2.5"
 
 project:
   name: sweetmelon
   display_name: Sweetmelon
-  version: 2.4.0
+  version: 2.5.2
   min_sdk: "3.0.0"
 
   # مسیر استاتیک اپلیکیشن وب

@@ -6,4 +6,4 @@
 ///
 /// This is not the version of an application built on the core; that one is
 /// `project.version` in sweetmelon.yaml.
-const String sweetmelonCoreVersion = '2.5.0';
+const String sweetmelonCoreVersion = '2.5.2';

@@ -207,16 +207,21 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    // Volume button interception
+    // Volume button interception: only while the `volume_buttons` plugin is
+    // listening. Otherwise the keys go to the system, so they change the
+    // volume (and show the volume panel) as in any other app.
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        when (keyCode) {
-            KeyEvent.KEYCODE_VOLUME_UP -> {
-                volumeEventSink?.success("up")
-                return true
-            }
-            KeyEvent.KEYCODE_VOLUME_DOWN -> {
-                volumeEventSink?.success("down")
-                return true
+        val sink = volumeEventSink
+        if (sink != null) {
+            when (keyCode) {
+                KeyEvent.KEYCODE_VOLUME_UP -> {
+                    sink.success("up")
+                    return true
+                }
+                KeyEvent.KEYCODE_VOLUME_DOWN -> {
+                    sink.success("down")
+                    return true
+                }
             }
         }
         return super.onKeyDown(keyCode, event)

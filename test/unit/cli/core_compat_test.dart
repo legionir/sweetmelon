@@ -51,7 +51,7 @@ void main() {
     List<ConfigIssue> run(String s) =>
         const ConfigValidator(knownPluginKeys: known).validate(s);
     // A complete valid file the cases below add one key to.
-    const base = 'core: "2.4"\nproject:\n  name: a\n  version: 1.0.0\n'
+    const base = 'core: "2.5"\nproject:\n  name: a\n  version: 1.0.0\n'
         '  display_name: A\n';
     const tail = 'plugins:\n  storage:\n    enabled: true\n';
     bool hasError(List<ConfigIssue> l, String part) => l.any(
@@ -72,10 +72,10 @@ void main() {
 
     test('dart_package and icon are checked', () {
       expect(
-          hasError(run('core: "2.4"\nproject:\n  dart_package: Bad-Name\n'),
+          hasError(run('core: "2.5"\nproject:\n  dart_package: Bad-Name\n'),
               'package'),
           isTrue);
-      expect(hasError(run('core: "2.4"\nproject:\n  icon: logo.jpg\n'), 'icon'),
+      expect(hasError(run('core: "2.5"\nproject:\n  icon: logo.jpg\n'), 'icon'),
           isTrue);
       expect(
           run('$base  dart_package: my_app\n  icon: a/b.png\n$tail'), isEmpty);
@@ -83,16 +83,16 @@ void main() {
 
     test('plugin_selection rules', () {
       expect(
-          hasError(run('core: "2.4"\nplugin_selection:\n  mode: sometimes\n'),
+          hasError(run('core: "2.5"\nplugin_selection:\n  mode: sometimes\n'),
               'mode'),
           isTrue);
       expect(
-          hasError(run('core: "2.4"\nplugin_selection:\n  include: [nope]\n'),
+          hasError(run('core: "2.5"\nplugin_selection:\n  include: [nope]\n'),
               'unknown plugin'),
           isTrue);
       expect(
           hasError(
-              run('core: "2.4"\nplugin_selection:\n  include: [camera]\n  exclude: [camera]\n'),
+              run('core: "2.5"\nplugin_selection:\n  include: [camera]\n  exclude: [camera]\n'),
               'both'),
           isTrue);
       expect(
@@ -104,7 +104,7 @@ void main() {
 
   group('PluginSelection.fromYaml', () {
     test('defaults to manual without the section', () {
-      final s = PluginSelection.fromYaml('core: "2.4"\n');
+      final s = PluginSelection.fromYaml('core: "2.5"\n');
       expect(s.mode, SelectionMode.manual);
       expect(s.include, isEmpty);
     });
