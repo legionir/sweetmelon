@@ -65,7 +65,7 @@ void main() {
 
     test('refuses a core it was not built for', () async {
       File(p.join(dir.path, 'sweetmelon.yaml'))
-          .writeAsStringSync(_yaml.replaceFirst('2.4', '9.9'));
+          .writeAsStringSync(_yaml.replaceFirst('2.5', '9.9'));
       expect(
           await PrepareRunner(root: dir.path).run(const PrepareOverrides()), 1);
     });
