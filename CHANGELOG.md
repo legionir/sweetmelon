@@ -11,6 +11,23 @@ pins a core release in `sweetmelon.yaml` (`core: "2.4"`).
 
 Fixes for an older minor are made on its `release/x.y` branch and tagged there.
 
+## [2.5.0]
+
+### Added
+- **`fileSystem.browse`**: read-only listing of the device's shared storage
+  (Music, Download, SD card), one folder per call, so an app can show a file
+  manager. Needs the `storage` / `audio` permission, writes nothing.
+- `audio` permission name for `NativeSDK.permission.*` (`READ_MEDIA_AUDIO`).
+
+### Changed
+- The WebView no longer allows pinch zoom (`enableZoom(false)`), so an app
+  cannot open zoomed in or be zoomed by accident.
+
+### Fixed
+- **`audio.play` failed until the microphone was granted.** The plugin
+  declared `microphone` as required for every call, so playback was rejected
+  with "Permission microphone denied". Only `startRecording` needs it now.
+
 ## [2.4.2]
 
 ### Fixed

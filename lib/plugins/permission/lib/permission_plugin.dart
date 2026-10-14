@@ -11,6 +11,7 @@ class PermissionPlugin extends Plugin {
   static const List<String> _knownPermissions = [
     'camera',
     'storage',
+    'audio',
     'manageExternalStorage',
     'location',
     'locationAlways',

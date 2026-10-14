@@ -66,6 +66,8 @@ class NativePermissionProvider implements PermissionProvider {
         return ph.Permission.camera;
       case 'storage':
         return ph.Permission.storage;
+      case 'audio':
+        return ph.Permission.audio;
       case 'manageExternalStorage':
         return ph.Permission.manageExternalStorage;
       case 'location':

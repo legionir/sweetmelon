@@ -75,6 +75,8 @@ class _WebViewHostState extends State<WebViewHost> with WidgetsBindingObserver {
   void _initController() {
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      // An app is not a web page: no pinch zoom, so it can never open zoomed in.
+      ..enableZoom(false)
       ..setNavigationDelegate(_buildNavigationDelegate())
       ..addJavaScriptChannel(
         'flutterBridge',

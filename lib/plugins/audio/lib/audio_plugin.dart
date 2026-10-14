@@ -33,8 +33,11 @@ class AudioPlugin extends Plugin {
   @override
   String get description => 'Audio recorder and player plugin';
 
+  // Playback needs no permission. The microphone is requested by the recorder
+  // itself (`hasPermission`) when `startRecording` runs; listing it here would
+  // make the plugin manager reject `play` until the microphone is granted.
   @override
-  List<String> get requiredPermissions => ['microphone'];
+  List<String> get requiredPermissions => const [];
 
   @override
   List<String> get supportedMethods => [

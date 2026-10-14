@@ -116,6 +116,7 @@
       deleteFile: function (p, b) { return call('fileSystem', 'deleteFile', { path: p, baseDir: b || 'documents' }); },
       fileExists: function (p, b) { return call('fileSystem', 'fileExists', { path: p, baseDir: b || 'documents' }); },
       listFiles: function (p, o) { o = o || {}; return call('fileSystem', 'listFiles', { path: p || '', baseDir: o.baseDir || 'documents', recursive: !!o.recursive }); },
+      browse: function (p, o) { o = o || {}; return call('fileSystem', 'browse', { path: p || '', extensions: o.extensions }); },
       createDirectory: function (p, o) { o = o || {}; return call('fileSystem', 'createDirectory', { path: p, baseDir: o.baseDir || 'documents', recursive: o.recursive !== false }); },
       deleteDirectory: function (p, o) { o = o || {}; return call('fileSystem', 'deleteDirectory', { path: p, baseDir: o.baseDir || 'documents', recursive: !!o.recursive }); },
       stat: function (p, o) { o = o || {}; return call('fileSystem', 'stat', { path: p, baseDir: o.baseDir || 'documents', type: o.type || 'file' }); }

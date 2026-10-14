@@ -54,6 +54,20 @@ Sandboxed file system access with path traversal protection.
 | `baseDir` | `string` | — | `documents` |
 | `recursive` | `bool` | — | `false` |
 
+### `browse`
+Read-only listing of the device's **shared storage** (outside the app sandbox),
+one folder level per call. Without `path` it returns the storage roots
+(internal storage, SD cards). Only paths under those roots are served, symlinks
+are resolved before the check, hidden entries are skipped and nothing can be
+written or deleted. Ask for the `audio` / `storage` permission first.
+| Param | Type | Required | Default |
+|-------|------|----------|---------|
+| `path` | `string` | — | `""` (storage roots) |
+| `extensions` | `string[]` | — | all files (folders are always listed) |
+
+**Returns:** `{ path, parent, items: [{ name, path, type, size, extension, modified }] }`
+(`parent` is `""` for a root, `null` at the list of roots).
+
 ### `createDirectory`, `deleteDirectory`
 | Param | Type | Required | Default |
 |-------|------|----------|---------|
