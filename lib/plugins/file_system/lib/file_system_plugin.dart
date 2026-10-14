@@ -23,6 +23,7 @@ class FileSystemPlugin extends Plugin {
         'deleteFile',
         'fileExists',
         'listFiles',
+        'browse',
         'createDirectory',
         'deleteDirectory',
         'stat',
@@ -42,6 +43,8 @@ class FileSystemPlugin extends Plugin {
         return _deleteFile(args);
       case 'fileExists':
         return _fileExists(args);
+      case 'browse':
+        return _browse(args);
       case 'listFiles':
         return _listFiles(args);
       case 'createDirectory':
@@ -163,6 +166,119 @@ class FileSystemPlugin extends Plugin {
     );
 
     return {'exists': await file.exists()};
+  }
+
+  /// Read-only, one-level listing of the device's shared storage (Music,
+  /// Download, SD card ...), outside the app sandbox. Without `path` it returns
+  /// the storage roots. Only paths under [_sharedRoots] are served, symlinks
+  /// are resolved before that check, and nothing here can write or delete.
+  Future<Map<String, dynamic>> _browse(Map<String, dynamic> args) async {
+    final requested = (args['path'] as String? ?? '').trim();
+    final extensions = (args['extensions'] as List?)
+        ?.map((e) => e.toString().toLowerCase().replaceFirst('.', ''))
+        .toSet();
+
+    if (requested.isEmpty) {
+      final roots = <Map<String, dynamic>>[];
+      for (final root in await _storageRoots()) {
+        roots.add({
+          'name': root.label,
+          'path': root.path,
+          'type': 'directory',
+          'size': 0,
+        });
+      }
+      return {'path': '', 'parent': null, 'items': roots};
+    }
+
+    final normalized = p.normalize(requested.replaceAll('\\', '/'));
+    if (!p.isAbsolute(normalized) || normalized.contains('..')) {
+      throw const FileSystemException('Invalid path');
+    }
+
+    final dir = Directory(normalized);
+    if (!await dir.exists()) {
+      throw FileSystemException('Folder not found', normalized);
+    }
+    final resolved = await dir.resolveSymbolicLinks();
+    final roots = await _storageRoots();
+    final root = roots
+        .where((r) => resolved == r.real || p.isWithin(r.real, resolved))
+        .firstOrNull;
+    if (root == null) {
+      throw const FileSystemException('Path is outside shared storage');
+    }
+
+    final items = <Map<String, dynamic>>[];
+    await for (final entity in dir.list(followLinks: false)) {
+      final name = p.basename(entity.path);
+      if (name.startsWith('.')) continue;
+      final isDir = entity is Directory;
+      final extension = p.extension(name).toLowerCase().replaceFirst('.', '');
+      if (!isDir && extensions != null && !extensions.contains(extension)) {
+        continue;
+      }
+      if (entity is Link) continue;
+      try {
+        final stat = await entity.stat();
+        items.add({
+          'name': name,
+          'path': entity.path,
+          'type': isDir ? 'directory' : 'file',
+          'size': isDir ? 0 : stat.size,
+          'extension': isDir ? '' : extension,
+          'modified': stat.modified.toIso8601String(),
+        });
+      } on FileSystemException {
+        continue;
+      }
+    }
+
+    items.sort((a, b) {
+      if (a['type'] != b['type']) return a['type'] == 'directory' ? -1 : 1;
+      return (a['name'] as String)
+          .toLowerCase()
+          .compareTo((b['name'] as String).toLowerCase());
+    });
+
+    final isRoot = resolved == root.real;
+    return {
+      'path': normalized,
+      'parent': isRoot ? '' : p.dirname(normalized),
+      'items': items,
+    };
+  }
+
+  static const _sharedRoots = ['/storage/emulated/0', '/sdcard'];
+
+  Future<List<_StorageRoot>> _storageRoots() async {
+    final roots = <_StorageRoot>[];
+    final seen = <String>{};
+
+    Future<void> add(String path, String label) async {
+      final dir = Directory(path);
+      if (!await dir.exists()) return;
+      final real = await dir.resolveSymbolicLinks();
+      if (seen.add(real)) roots.add(_StorageRoot(label, path, real));
+    }
+
+    await add(_sharedRoots.first, 'Internal storage');
+    await add(_sharedRoots.last, 'Internal storage');
+
+    final storage = Directory('/storage');
+    if (await storage.exists()) {
+      try {
+        await for (final entity in storage.list(followLinks: false)) {
+          final name = p.basename(entity.path);
+          if (entity is Directory && name != 'emulated' && name != 'self') {
+            await add(entity.path, 'SD card ($name)');
+          }
+        }
+      } on FileSystemException {
+        /* /storage is not listable on this device */
+      }
+    }
+    return roots;
   }
 
   Future<Map<String, dynamic>> _listFiles(Map<String, dynamic> args) async {
@@ -400,4 +516,11 @@ class FileSystemPlugin extends Plugin {
 
     return ValidationResult.valid();
   }
+}
+
+class _StorageRoot {
+  final String label;
+  final String path;
+  final String real;
+  const _StorageRoot(this.label, this.path, this.real);
 }

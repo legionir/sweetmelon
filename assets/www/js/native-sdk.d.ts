@@ -173,6 +173,7 @@ export interface NativeSDKInterface {
     deleteFile(path: string, baseDir?: string): Promise<any>;
     fileExists(path: string, baseDir?: string): Promise<{ exists: boolean }>;
     listFiles(path?: string, options?: any): Promise<{ items: FileInfo[] }>;
+    browse(path?: string, options?: { extensions?: string[] }): Promise<{ path: string; parent: string | null; items: FileInfo[] }>;
     createDirectory(path: string, options?: any): Promise<any>;
     deleteDirectory(path: string, options?: any): Promise<any>;
     stat(path: string, options?: any): Promise<any>;
