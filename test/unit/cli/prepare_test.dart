@@ -6,7 +6,7 @@ import 'package:sweetmelon/cli/prepare_runner.dart';
 import 'package:sweetmelon/cli/project_settings.dart';
 
 const _yaml = '''
-core: "2.4"
+core: "2.5"
 
 project:
   name: demo
@@ -47,9 +47,9 @@ void main() {
     });
 
     test('setPluginEnabled fills an empty plugins: {} mapping', () {
-      final out = setPluginEnabled('core: "2.4"\nplugins: {}\n', 'camera', true,
+      final out = setPluginEnabled('core: "2.5"\nplugins: {}\n', 'camera', true,
           addIfMissing: true);
-      expect(out, 'core: "2.4"\nplugins:\n  camera:\n    enabled: true\n');
+      expect(out, 'core: "2.5"\nplugins:\n  camera:\n    enabled: true\n');
     });
 
     test('setPluginEnabled can add an unlisted plugin', () {

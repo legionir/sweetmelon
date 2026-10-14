@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sweetmelon/cli/config_validator.dart';
 
 const _valid = '''
-core: "2.4"
+core: "2.5"
 
 project:
   name: demo_app
