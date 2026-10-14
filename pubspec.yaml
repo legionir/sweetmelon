@@ -2,7 +2,7 @@ name: sweetmelon
 description: Flutter Native Bridge - JS to Native communication platform
 publish_to: 'none'
 
-version: 2.5.2+1
+version: 2.5.3+1
 
 environment:
   sdk: ^3.0.0

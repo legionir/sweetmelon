@@ -20,6 +20,7 @@ class PermissionPlugin extends Plugin {
     'notification',
     'contacts',
     'bluetooth',
+    'phone',
   ];
 
   @override

@@ -11,6 +11,19 @@ pins a core release in `sweetmelon.yaml` (`core: "2.4"`).
 
 Fixes for an older minor are made on its `release/x.y` branch and tagged there.
 
+## [2.5.3]
+
+### Fixed
+- **`simInfo` was always denied.** It requires the `phone` permission, which the
+  permission provider did not know. `phone` (`READ_PHONE_STATE`) is mapped now.
+
+### Added
+- Contract tests (`test/unit/contract`): a plugin may not gate all of its
+  methods behind a permission without being on a reviewed list, every declared
+  permission must be one the provider can map, and the version in
+  `core_version.dart`, `pubspec.yaml`, `sweetmelon.yaml`, the CHANGELOG and the
+  documented `@v` pins must agree.
+
 ## [2.5.2]
 
 `v2.5.1` was tagged by hand without a code change; this is the release that

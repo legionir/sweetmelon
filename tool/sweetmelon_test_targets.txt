@@ -24,6 +24,8 @@ test/unit/cli/service_locator_golden_test.dart
 test/unit/cli/sync_logic_test.dart
 test/unit/cli/version_bump_test.dart
 test/unit/cli/web_sync_test.dart
+test/unit/contract/plugin_permissions_test.dart
+test/unit/contract/release_consistency_test.dart
 test/unit/core/app_context_guard_test.dart
 test/unit/core/app_context_test.dart
 test/unit/core/app_context_widget_test.dart
