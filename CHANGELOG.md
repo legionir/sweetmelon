@@ -11,6 +11,16 @@ pins a core release in `sweetmelon.yaml` (`core: "2.4"`).
 
 Fixes for an older minor are made on its `release/x.y` branch and tagged there.
 
+## [2.5.2]
+
+`v2.5.1` was tagged by hand without a code change; this is the release that
+carries the fixes below.
+
+### Fixed
+- **The hardware volume keys did nothing in every app.** `MainActivity`
+  swallowed `KEYCODE_VOLUME_UP/DOWN` even when no one was listening. It now
+  keeps them only while the `volume_buttons` plugin is listening.
+
 ## [2.5.0]
 
 ### Added
