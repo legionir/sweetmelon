@@ -19,6 +19,10 @@ Fixes for an older minor are made on its `release/x.y` branch and tagged there.
   manager. Needs the `storage` / `audio` permission, writes nothing.
 - `audio` permission name for `NativeSDK.permission.*` (`READ_MEDIA_AUDIO`).
 
+### Changed
+- The WebView no longer allows pinch zoom (`enableZoom(false)`), so an app
+  cannot open zoomed in or be zoomed by accident.
+
 ### Fixed
 - **`audio.play` failed until the microphone was granted.** The plugin
   declared `microphone` as required for every call, so playback was rejected
