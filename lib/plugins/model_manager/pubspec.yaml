@@ -1,0 +1,20 @@
+name: model_manager_plugin
+description: Keeps AI models on the device and imports them from the user's files
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  sweetmelon:
+    path: ../../..
+  flutter:
+    sdk: flutter
+  plugin_engine:
+    path: ../../packages/plugin_engine
+  core:
+    path: ../../packages/core
+  file_picker: ^8.0.0+1
+  archive: ^4.0.7
+  path: ^1.9.0

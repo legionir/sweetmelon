@@ -77,6 +77,14 @@ void main() {
   });
 
   group('UpgradeRunner', () {
+    // Relative to the core under test, so a new release does not break them.
+    final now = sweetmelonCoreVersion.split('.').map(int.parse).toList();
+    const start = sweetmelonCoreVersion;
+    final nextPatch = '${now[0]}.${now[1]}.${now[2] + 1}';
+    final nextMinor = '${now[0]}.${now[1] + 1}.0';
+    final nextMinorYaml = '${now[0]}.${now[1] + 1}';
+    final looseVersion = '${now[0]}.${now[1]}';
+
     late Directory dir;
     setUp(() {
       dir = Directory.systemTemp.createTempSync('upgrade_test');
@@ -85,7 +93,7 @@ void main() {
           ..createSync(recursive: true)
           ..writeAsStringSync(text.replaceAll(
               'legionir/sweetmelon@v$sweetmelonCoreVersion',
-              'legionir/sweetmelon@v2.5.0'));
+              'legionir/sweetmelon@v$start'));
       });
     });
     tearDown(() => dir.deleteSync(recursive: true));
@@ -95,25 +103,26 @@ void main() {
             .readAsStringSync();
 
     test('a patch release changes the pins', () async {
-      expect(await UpgradeRunner(root: dir.path).run('2.5.1', apply: true), 0);
-      expect(workflowText(), contains('@v2.5.1'));
-      expect(workflowText(), isNot(contains('@v2.5.0')));
+      expect(
+          await UpgradeRunner(root: dir.path).run(nextPatch, apply: true), 0);
+      expect(workflowText(), contains('@v$nextPatch'));
+      expect(workflowText(), isNot(contains('@v$start')));
     });
 
     test('a new minor or major needs a flag', () async {
       final runner = UpgradeRunner(root: dir.path);
-      expect(await runner.run('2.6.0', apply: true), 1);
+      expect(await runner.run(nextMinor, apply: true), 1);
       expect(await runner.run('3.0.0', apply: true, allowMinor: true), 1);
-      expect(workflowText(), contains('@v2.5.0'));
-      expect(await runner.run('2.6.0', apply: true, allowMinor: true), 0);
+      expect(workflowText(), contains('@v$start'));
+      expect(await runner.run(nextMinor, apply: true, allowMinor: true), 0);
       final yaml = File(p.join(dir.path, 'sweetmelon.yaml')).readAsStringSync();
-      expect(yaml, contains('core: "2.6"'));
+      expect(yaml, contains('core: "$nextMinorYaml"'));
     });
 
     test('a dry run writes nothing and a loose version is refused', () async {
-      expect(await UpgradeRunner(root: dir.path).run('2.5.1'), 0);
-      expect(workflowText(), contains('@v2.5.0'));
-      expect(await UpgradeRunner(root: dir.path).run('2.5'), 64);
+      expect(await UpgradeRunner(root: dir.path).run(nextPatch), 0);
+      expect(workflowText(), contains('@v$start'));
+      expect(await UpgradeRunner(root: dir.path).run(looseVersion), 64);
     });
   });
 }

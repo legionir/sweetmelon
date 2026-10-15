@@ -7,6 +7,8 @@ export 'src/runtime/webview_host.dart';
 export 'src/runtime/asset_server.dart';
 export 'src/runtime/app_context.dart';
 export 'src/utils/logger.dart';
+export 'src/models/model_store.dart';
+export 'src/models/model_roles.dart';
 export 'src/middleware/error_recovery.dart';
 export 'src/middleware/circuit_breaker.dart';
 export 'src/middleware/offline_queue.dart';

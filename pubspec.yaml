@@ -2,7 +2,7 @@ name: sweetmelon
 description: Flutter Native Bridge - JS to Native communication platform
 publish_to: 'none'
 
-version: 2.5.3+1
+version: 2.6.0+1
 
 environment:
   sdk: ^3.0.0
@@ -58,6 +58,9 @@ dependencies:
   # CLI tools (bin/)
   yaml: ^3.1.2
   args: ^2.4.2
+
+  # Added by `sweetmelon sync` for enabled plugins
+  archive: ^4.0.7
 
 dev_dependencies:
   flutter_test:

@@ -151,6 +151,9 @@ export class NativeBridgeService implements OnDestroy {
   get nfc() { return window.NativeSDK.nfc; }
   get speechToText() { return window.NativeSDK.speechToText; }
   get textToSpeech() { return window.NativeSDK.textToSpeech; }
+  get modelManager() { return window.NativeSDK.modelManager; }
+  get llm() { return window.NativeSDK.llm; }
+  get speechOffline() { return window.NativeSDK.speechOffline; }
   get videoPlayer() { return window.NativeSDK.videoPlayer; }
   get inAppBrowser() { return window.NativeSDK.inAppBrowser; }
   get pdf() { return window.NativeSDK.pdf; }

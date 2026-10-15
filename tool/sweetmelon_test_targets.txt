@@ -5,6 +5,7 @@ test/integration/lazy_loading_integration_test.dart
 test/plugins/all_plugins_basic_test.dart
 test/plugins/encryption_plugin_test.dart
 test/plugins/haptic_plugin_test.dart
+test/plugins/model_manager_plugin_test.dart
 test/plugins/storage_plugin_test.dart
 test/plugins/toast_plugin_test.dart
 test/plugins/toast_plugin_widget_test.dart
@@ -32,6 +33,8 @@ test/unit/core/app_context_widget_test.dart
 test/unit/core/asset_server_test.dart
 test/unit/core/message_bridge_test.dart
 test/unit/core/message_protocol_test.dart
+test/unit/core/model_roles_test.dart
+test/unit/core/model_store_test.dart
 test/unit/core/offline_queue_test.dart
 test/unit/core/plugin_error_handler_test.dart
 test/unit/engine/lazy_plugin_loader_test.dart

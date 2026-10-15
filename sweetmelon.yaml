@@ -9,12 +9,12 @@
 # Release of the Sweetmelon core this project is built for. A new minor or major
 # release is never picked up silently; change this on purpose after reading
 # CHANGELOG.md.
-core: "2.5"
+core: "2.6"
 
 project:
   name: sweetmelon
   display_name: Sweetmelon
-  version: 2.5.3
+  version: 2.6.0
   min_sdk: "3.0.0"
 
   # مسیر استاتیک اپلیکیشن وب
@@ -99,6 +99,13 @@ plugins:
   speech_to_text:
     enabled: false
   text_to_speech:
+    enabled: false
+  # AI on the device: the user imports models from their own files.
+  model_manager:
+    enabled: true
+  llm:
+    enabled: false
+  speech_offline:
     enabled: false
 
   # ════════════════════════════════════════════════════════════
