@@ -374,7 +374,7 @@ export interface NativeSDKInterface {
     loadSynthesizer(options: { modelId: string; type?: 'auto' | 'vits' | 'kokoro'; threads?: number; noiseScale?: number; noiseScaleW?: number; lengthScale?: number; silenceScale?: number; maxNumSentences?: number; lang?: string }): Promise<{ loaded: boolean; modelId: string; type: string; sampleRate: number; speakers: number }>;
     unloadSynthesizer(): Promise<{ unloaded: boolean }>;
     /** Queues text; synthesised ahead of playback. Events 'speechOffline.speak'. */
-    speak(text: string, options?: { id?: string; speed?: number; speakerId?: number; silenceScale?: number; volume?: number }): Promise<{ queued: boolean; id?: string; reason?: string }>;
+    speak(text: string, options?: { id?: string; speed?: number; speakerId?: number; silenceScale?: number; volume?: number; rate?: number }): Promise<{ queued: boolean; id?: string; reason?: string }>;
     synthesize(text: string, options?: { speed?: number; speakerId?: number; silenceScale?: number }): Promise<{ path: string; sampleRate: number; durationMs: number; synthMs: number }>;
     stopSpeaking(): Promise<{ stopped: boolean }>;
     setVolume(volume: number): Promise<{ volume: number }>;

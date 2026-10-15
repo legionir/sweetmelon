@@ -40,12 +40,17 @@ time; longer speech is cut into 28 s windows.
 | Method | Args | Returns |
 |--------|------|---------|
 | `loadSynthesizer` | `modelId`, `type?` (`auto`/`vits`/`kokoro`), `threads?`, `noiseScale?`, `noiseScaleW?`, `lengthScale?`, `silenceScale?`, `maxNumSentences?`, `lang?` | `{ loaded, sampleRate, speakers }` |
-| `speak` | `text`, `id?`, `speed?` (1.0), `speakerId?` (0), `silenceScale?`, `volume?` | `{ queued, id }` |
+| `speak` | `text`, `id?`, `speed?` (1.0), `speakerId?` (0), `silenceScale?`, `volume?`, `rate?` (1.0, 0.5-2) | `{ queued, id }` |
 | `synthesize` | `text`, `speed?`, `speakerId?`, `silenceScale?` | `{ path, sampleRate, durationMs, synthMs }` |
 | `stopSpeaking` | — | `{ stopped }` |
 | `setVolume` | `volume` (0-1) | `{ volume }` |
 | `unloadSynthesizer` | — | `{ unloaded }` |
 | `status` | — | `{ recognizer, synthesizer }` |
+
+`speed` is the model's own speaking speed (the pitch stays). The models have no
+pitch control; `rate` is the playback rate, which changes speed *and* pitch.
+To change only the pitch by a factor `p`, play at `rate: p` and synthesise at
+`speed: wanted / p`.
 
 `speak` queues the text and synthesises it at once, while the previous text is
 still playing, so sentences follow each other without a gap. Feed it one

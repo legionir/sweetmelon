@@ -460,6 +460,7 @@ class SpeechOfflinePlugin extends Plugin {
     final sid = (args['speakerId'] as num?)?.toInt() ?? 0;
     final silence =
         (args['silenceScale'] as num?)?.toDouble() ?? _ttsSilenceScale;
+    final rate = ((args['rate'] as num?)?.toDouble() ?? 1.0).clamp(0.5, 2.0);
     final volume = (args['volume'] as num?)?.toDouble();
     if (volume != null) {
       _volume = volume.clamp(0.0, 1.0);
@@ -472,6 +473,7 @@ class SpeechOfflinePlugin extends Plugin {
       id: id,
       text: text,
       epoch: _speakEpoch,
+      rate: rate,
       path: output,
       synthesis: worker.request('synth', {
         'text': text,
@@ -506,7 +508,7 @@ class SpeechOfflinePlugin extends Plugin {
           }
           await _emit('speechOffline.speak',
               {'id': item.id, 'state': 'started', 'text': item.text});
-          await _play(item.path);
+          await _play(item.path, item.rate);
           await _emit(
               'speechOffline.speak', {'id': item.id, 'state': 'finished'});
         } catch (e) {
@@ -523,9 +525,10 @@ class SpeechOfflinePlugin extends Plugin {
     await _emit('speechOffline.speak', {'state': 'idle'});
   }
 
-  Future<void> _play(String path) async {
+  Future<void> _play(String path, double rate) async {
     final player = _player ??= AudioPlayer();
     await player.setVolume(_volume);
+    await player.setPlaybackRate(rate);
     final done = Completer<void>();
     final sub = player.onPlayerComplete.listen((_) {
       if (!done.isCompleted) done.complete();
@@ -639,6 +642,7 @@ class _SpeakItem {
     required this.id,
     required this.text,
     required this.epoch,
+    required this.rate,
     required this.path,
     required this.synthesis,
   });
@@ -646,6 +650,7 @@ class _SpeakItem {
   final String id;
   final String text;
   final int epoch;
+  final double rate;
   final String path;
   final Future<dynamic> synthesis;
 }
