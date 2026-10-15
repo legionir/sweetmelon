@@ -119,6 +119,62 @@ export interface PhotoResult {
   mimeType: string;
 }
 
+
+// ── AI types ──
+export interface AiModelFile { name: string; path: string; size: number }
+export interface AiModel {
+  id: string;
+  kind: string;
+  name: string;
+  dir: string;
+  files: AiModelFile[];
+  directories: string[];
+  sizeBytes: number;
+  createdAt: string;
+}
+export interface LlmLoadOptions {
+  /** A model of the modelManager (kind 'llm'): its .gguf and mmproj are found by name. */
+  modelId?: string;
+  /** Or a file inside the models folder. */
+  path?: string;
+  mmproj?: string;
+  contextSize?: number;
+  device?: 'auto' | 'cpu' | 'gpu';
+  gpuLayers?: number;
+  threads?: number;
+  threadsBatch?: number;
+  batchSize?: number;
+  microBatchSize?: number;
+  flashAttention?: 'auto' | 'on' | 'off';
+  useMmap?: boolean;
+  useMlock?: boolean;
+  kvCacheType?: 'f16' | 'q8_0' | 'q4_0';
+  chatTemplate?: string;
+  ropeFrequencyBase?: number;
+  ropeFrequencyScale?: number;
+  systemPrompt?: string;
+  maxContextTokens?: number;
+}
+export interface LlmChatOptions {
+  images?: string[];
+  systemPrompt?: string;
+  requestId?: string;
+  params?: {
+    maxTokens?: number;
+    temperature?: number;
+    topK?: number;
+    topP?: number;
+    minP?: number;
+    repeatPenalty?: number;
+    presencePenalty?: number;
+    seed?: number;
+    stop?: string[];
+    enableThinking?: boolean;
+    thinkingBudget?: number;
+    streamBatchTokens?: number;
+  };
+}
+
 // ── NativeSDK Interface ──
 export interface NativeSDKInterface {
   waitForReady(timeoutMs?: number): Promise<NativeBridgeInfo>;
@@ -282,6 +338,48 @@ export interface NativeSDKInterface {
     cancelAll(): Promise<any>;
     getAlarm(alarmId: string): Promise<any>;
     getAllAlarms(): Promise<{ alarms: any[]; count: number }>;
+  };
+
+  modelManager: {
+    /** Opens the file picker; files or an archive (.zip, .tar.gz, .tar.bz2, .tar.xz) become one model. */
+    import(options: { kind: string; name?: string; extensions?: string[]; extract?: boolean }): Promise<{ imported: boolean; reason?: string; model?: AiModel }>;
+    list(kind?: string): Promise<{ models: AiModel[] }>;
+    get(id: string): Promise<{ found: boolean; model?: AiModel }>;
+    remove(id: string): Promise<{ removed: boolean }>;
+    rename(id: string, name: string): Promise<{ model: AiModel }>;
+    getInfo(): Promise<{ name: string; version: string; root: string; count: number; sizeBytes: number }>;
+  };
+
+  llm: {
+    load(options: LlmLoadOptions): Promise<{ loaded: boolean; modelId?: string; contextSize: number; backend: string; vision: boolean; reason?: string }>;
+    unload(): Promise<{ unloaded: boolean }>;
+    /** Returns at once. Tokens arrive as 'llm.token' events, the end as 'llm.done' (or 'llm.error'). */
+    chat(text: string, options?: LlmChatOptions): Promise<{ started: boolean; requestId?: string; reason?: string }>;
+    stop(): Promise<{ stopped: boolean }>;
+    reset(options?: { keepSystemPrompt?: boolean }): Promise<{ reset: boolean }>;
+    setSystemPrompt(text: string | null): Promise<{ set: boolean }>;
+    getHistory(): Promise<{ systemPrompt?: string; messages: { role: string; text: string }[] }>;
+    countTokens(text: string): Promise<{ tokens: number }>;
+    status(): Promise<{ loaded: boolean; loading: boolean; generating: boolean; modelId?: string; vision: boolean }>;
+    getInfo(): Promise<any>;
+  };
+
+  speechOffline: {
+    loadRecognizer(options: { modelId: string; type?: 'auto' | 'whisper' | 'transducer' | 'sense_voice' | 'paraformer'; language?: string; task?: 'transcribe' | 'translate'; threads?: number; tailPaddings?: number; decodingMethod?: string; useItn?: boolean }): Promise<{ loaded: boolean; modelId: string; type: string }>;
+    unloadRecognizer(): Promise<{ unloaded: boolean }>;
+    startListening(options?: { sampleRate?: number; maxSeconds?: number }): Promise<{ started: boolean; reason?: string; sampleRate?: number }>;
+    stopListening(options?: { recognize?: boolean }): Promise<{ text: string; audioSeconds?: number; decodeMs?: number; reason?: string }>;
+    cancelListening(): Promise<{ cancelled: boolean }>;
+    transcribeFile(path: string): Promise<{ text: string; audioSeconds?: number; decodeMs?: number }>;
+    loadSynthesizer(options: { modelId: string; type?: 'auto' | 'vits' | 'kokoro'; threads?: number; noiseScale?: number; noiseScaleW?: number; lengthScale?: number; silenceScale?: number; maxNumSentences?: number; lang?: string }): Promise<{ loaded: boolean; modelId: string; type: string; sampleRate: number; speakers: number }>;
+    unloadSynthesizer(): Promise<{ unloaded: boolean }>;
+    /** Queues text; synthesised ahead of playback. Events 'speechOffline.speak'. */
+    speak(text: string, options?: { id?: string; speed?: number; speakerId?: number; silenceScale?: number; volume?: number }): Promise<{ queued: boolean; id?: string; reason?: string }>;
+    synthesize(text: string, options?: { speed?: number; speakerId?: number; silenceScale?: number }): Promise<{ path: string; sampleRate: number; durationMs: number; synthMs: number }>;
+    stopSpeaking(): Promise<{ stopped: boolean }>;
+    setVolume(volume: number): Promise<{ volume: number }>;
+    status(): Promise<any>;
+    getInfo(): Promise<any>;
   };
 
   // ... (rest of plugins follow same pattern)

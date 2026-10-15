@@ -1,4 +1,4 @@
-# Pinned to core v2.5.2. Change it with: sweetmelon upgrade --to <version>
+# Pinned to core v2.6.0. Change it with: sweetmelon upgrade --to <version>
 name: Build app
 
 on:
@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: legionir/sweetmelon@v2.5.2
+      - uses: legionir/sweetmelon@v2.6.0
         with:
           target: apk
           www: www
@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: legionir/sweetmelon@v2.5.2
+      - uses: legionir/sweetmelon@v2.6.0
         with:
           target: aab
           www: www
@@ -72,7 +72,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: legionir/sweetmelon@v2.5.2
+      - uses: legionir/sweetmelon@v2.6.0
         with:
           target: ios
           www: www

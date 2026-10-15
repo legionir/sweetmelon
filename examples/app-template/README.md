@@ -1,7 +1,7 @@
 # My App
 
 Web app built with [Sweetmelon](https://github.com/legionir/sweetmelon) core
-v2.5.2.
+v2.6.0.
 
 - `www/` your app (HTML, CSS, JavaScript)
 - `sweetmelon.yaml` names, core version and plugin selection

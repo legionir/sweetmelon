@@ -1,0 +1,22 @@
+name: speech_offline_plugin
+description: Offline speech recognition and speech synthesis (sherpa-onnx)
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  sweetmelon:
+    path: ../../..
+  flutter:
+    sdk: flutter
+  plugin_engine:
+    path: ../../packages/plugin_engine
+  core:
+    path: ../../packages/core
+  sherpa_onnx: ^1.13.8
+  record: ^6.2.1
+  audioplayers: ^6.1.0
+  path_provider: ^2.1.1
+  path: ^1.9.0

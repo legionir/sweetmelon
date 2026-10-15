@@ -51,6 +51,7 @@ analyzer:
     - lib/plugins/intent_launcher/**
     - lib/plugins/kiosk_mode/**
     - lib/plugins/live_updater/**
+    - lib/plugins/llm/**
     - lib/plugins/loader_status/**
     - lib/plugins/media_manager/**
     - lib/plugins/native_market/**
@@ -74,6 +75,7 @@ analyzer:
     - lib/plugins/sms_otp/**
     - lib/plugins/social_login/**
     - lib/plugins/socket/**
+    - lib/plugins/speech_offline/**
     - lib/plugins/speech_to_text/**
     - lib/plugins/splash_screen/**
     - lib/plugins/ssh_client/**
@@ -114,6 +116,8 @@ analyzer:
     # Flutter tooling may extend this unmanaged tail during dependency resolution.
     - build/**
     - android/**
+    - ios/**
+    - web/**
 
 linter:
   # The lint rules applied to this project can be customized in the

@@ -11,6 +11,39 @@ pins a core release in `sweetmelon.yaml` (`core: "2.4"`).
 
 Fixes for an older minor are made on its `release/x.y` branch and tagged there.
 
+## [2.6.0]
+
+AI on the device. Three plugins, off unless an app asks for them; the user
+brings the models from their own files, nothing is downloaded by the core.
+
+### Added
+- **`modelManager`** keeps AI models in one folder of the app and imports them
+  from the user's files: pick files or an archive (`.zip`, `.tar.gz`,
+  `.tar.bz2`, `.tar.xz`), the plugin moves them in (instant, even for a
+  multi-gigabyte model) and unpacks archives. `list`, `get`, `rename`,
+  `remove`. Plugins that run models only open files inside that folder.
+- **`llm`**: chat with a GGUF language model (llama.cpp through
+  [llamadart](https://pub.dev/packages/llamadart)), with images when the model
+  comes with a projector. The answer streams as `llm.token` events, then
+  `llm.done`. Every sampling setting is a parameter: `temperature`, `topP`,
+  `topK`, `minP`, `repeatPenalty`, `presencePenalty`, `maxTokens`, `seed`,
+  `stop`, thinking budget; and load options: context size, threads, batch
+  sizes, GPU layers, flash attention, KV cache type, mmap/mlock, chat template,
+  RoPE.
+- **`speechOffline`**: speech recognition (Whisper, SenseVoice, Paraformer,
+  transducer) and speech synthesis (Piper/VITS, Kokoro) with
+  [sherpa-onnx](https://pub.dev/packages/sherpa_onnx), in a worker isolate.
+  Hold-to-talk: `startListening` / `stopListening` return the text. `speak`
+  queues text, synthesises it while the previous one plays and plays it.
+  Settings: language, task, threads, tail paddings, speaker, speed, noise
+  scales, length scale, silence scale, volume.
+- Contract tests (`test/unit/core`): the model store never leaves its folder
+  (`..`, links), and the file-role detection for each model type.
+
+### Changed
+- Tests no longer hard-code the core minor (`core: "2.5"`), so a new minor
+  does not break them.
+
 ## [2.5.3]
 
 ### Fixed

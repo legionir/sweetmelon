@@ -359,6 +359,27 @@
   },
   {
     "kind": "lazy",
+    "id": "modelManager",
+    "yamlKey": "model_manager",
+    "importPath": "plugins/model_manager/lib/model_manager_plugin.dart",
+    "code": "ModelManagerPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "llm",
+    "yamlKey": "llm",
+    "importPath": "plugins/llm/lib/llm_plugin.dart",
+    "code": "LlmPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
+    "id": "speechOffline",
+    "yamlKey": "speech_offline",
+    "importPath": "plugins/speech_offline/lib/speech_offline_plugin.dart",
+    "code": "SpeechOfflinePlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
     "id": "videoPlayer",
     "yamlKey": "video_player",
     "importPath": "plugins/video_player/lib/video_player_plugin.dart",

@@ -36,6 +36,7 @@ import 'package:sweetmelon/plugins/notification/lib/notification_plugin.dart';
 import 'package:sweetmelon/plugins/download_manager/lib/download_manager_plugin.dart';
 import 'package:sweetmelon/plugins/database/lib/database_plugin.dart';
 import 'package:sweetmelon/plugins/phone_dialer/lib/phone_dialer_plugin.dart';
+import 'package:sweetmelon/plugins/model_manager/lib/model_manager_plugin.dart';
 // </sweetmelon:plugin-imports>
 
 final sl = GetIt.instance;
@@ -242,6 +243,11 @@ class ServiceLocator {
         id: 'phoneDialer',
         version: '1.0.0',
         factory: () => PhoneDialerPlugin(),
+      ),
+      LazyPluginDefinition(
+        id: 'modelManager',
+        version: '1.0.0',
+        factory: () => ModelManagerPlugin(eventEmitter: emitter),
       ),
       // </sweetmelon:lazy-plugins>
     ]);

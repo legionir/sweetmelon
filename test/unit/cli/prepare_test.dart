@@ -5,8 +5,10 @@ import 'package:path/path.dart' as p;
 import 'package:sweetmelon/cli/prepare_runner.dart';
 import 'package:sweetmelon/cli/project_settings.dart';
 
-const _yaml = '''
-core: "2.5"
+import '../../helpers/core_minor.dart';
+
+final _yaml = '''
+core: "$coreMinor"
 
 project:
   name: demo
@@ -47,9 +49,11 @@ void main() {
     });
 
     test('setPluginEnabled fills an empty plugins: {} mapping', () {
-      final out = setPluginEnabled('core: "2.5"\nplugins: {}\n', 'camera', true,
+      final out = setPluginEnabled(
+          'core: "$coreMinor"\nplugins: {}\n', 'camera', true,
           addIfMissing: true);
-      expect(out, 'core: "2.5"\nplugins:\n  camera:\n    enabled: true\n');
+      expect(
+          out, 'core: "$coreMinor"\nplugins:\n  camera:\n    enabled: true\n');
     });
 
     test('setPluginEnabled can add an unlisted plugin', () {
@@ -65,7 +69,7 @@ void main() {
 
     test('refuses a core it was not built for', () async {
       File(p.join(dir.path, 'sweetmelon.yaml'))
-          .writeAsStringSync(_yaml.replaceFirst('2.5', '9.9'));
+          .writeAsStringSync(_yaml.replaceFirst(coreMinor, '9.9'));
       expect(
           await PrepareRunner(root: dir.path).run(const PrepareOverrides()), 1);
     });

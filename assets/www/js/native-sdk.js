@@ -362,6 +362,48 @@
       getInfo: function () { return call('textToSpeech', 'getInfo', {}); }
     },
 
+    modelManager: {
+      // The user may take minutes to pick and move a multi-gigabyte model.
+      import: function (o) { return call('modelManager', 'import', o || {}, { timeout: 1800000 }); },
+      list: function (kind) { return call('modelManager', 'list', kind ? { kind: kind } : {}); },
+      get: function (id) { return call('modelManager', 'get', { id: id }); },
+      remove: function (id) { return call('modelManager', 'remove', { id: id }); },
+      rename: function (id, name) { return call('modelManager', 'rename', { id: id, name: name }); },
+      getInfo: function () { return call('modelManager', 'getInfo', {}); }
+    },
+
+    llm: {
+      load: function (o) { return call('llm', 'load', o || {}, { timeout: 600000 }); },
+      unload: function () { return call('llm', 'unload', {}); },
+      // Returns at once; the answer streams as 'llm.token' events, then 'llm.done'.
+      chat: function (text, o) { return call('llm', 'chat', Object.assign({ text: text }, o || {})); },
+      stop: function () { return call('llm', 'stop', {}); },
+      reset: function (o) { return call('llm', 'reset', o || {}); },
+      setSystemPrompt: function (text) { return call('llm', 'setSystemPrompt', { text: text }); },
+      getHistory: function () { return call('llm', 'getHistory', {}); },
+      countTokens: function (text) { return call('llm', 'countTokens', { text: text }); },
+      status: function () { return call('llm', 'status', {}); },
+      getInfo: function () { return call('llm', 'getInfo', {}); }
+    },
+
+    speechOffline: {
+      loadRecognizer: function (o) { return call('speechOffline', 'loadRecognizer', o || {}, { timeout: 300000 }); },
+      unloadRecognizer: function () { return call('speechOffline', 'unloadRecognizer', {}); },
+      startListening: function (o) { return call('speechOffline', 'startListening', o || {}); },
+      // Ends the recording and resolves with the recognised text.
+      stopListening: function (o) { return call('speechOffline', 'stopListening', o || {}, { timeout: 300000 }); },
+      cancelListening: function () { return call('speechOffline', 'cancelListening', {}); },
+      transcribeFile: function (path) { return call('speechOffline', 'transcribeFile', { path: path }, { timeout: 300000 }); },
+      loadSynthesizer: function (o) { return call('speechOffline', 'loadSynthesizer', o || {}, { timeout: 300000 }); },
+      unloadSynthesizer: function () { return call('speechOffline', 'unloadSynthesizer', {}); },
+      speak: function (text, o) { return call('speechOffline', 'speak', Object.assign({ text: text }, o || {})); },
+      synthesize: function (text, o) { return call('speechOffline', 'synthesize', Object.assign({ text: text }, o || {}), { timeout: 300000 }); },
+      stopSpeaking: function () { return call('speechOffline', 'stopSpeaking', {}); },
+      setVolume: function (v) { return call('speechOffline', 'setVolume', { volume: v }); },
+      status: function () { return call('speechOffline', 'status', {}); },
+      getInfo: function () { return call('speechOffline', 'getInfo', {}); }
+    },
+
     videoPlayer: {
       create: function (o) { return call('videoPlayer', 'create', o || {}); },
       play: function (id) { return call('videoPlayer', 'play', { playerId: id }); },

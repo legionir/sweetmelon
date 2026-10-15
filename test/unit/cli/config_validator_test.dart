@@ -1,8 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sweetmelon/cli/config_validator.dart';
 
-const _valid = '''
-core: "2.5"
+import '../../helpers/core_minor.dart';
+
+final _valid = '''
+core: "$coreMinor"
 
 project:
   name: demo_app

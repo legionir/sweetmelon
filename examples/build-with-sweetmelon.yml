@@ -5,7 +5,7 @@
 #   sweetmelon.yaml     core version, app names, plugin selection
 #   icon.png            optional, square, 1024 px or more
 #
-# The core is NOT copied into your repository: `@v2.5.2` fetches that exact
+# The core is NOT copied into your repository: `@v2.6.0` fetches that exact
 # release. Its patch updates (v2.4.1 ...) are bug fixes; move to a new minor
 # on purpose when you want its features.
 name: Build app
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: legionir/sweetmelon@v2.5.2
+      - uses: legionir/sweetmelon@v2.6.0
         with:
           target: apk
           www: www
@@ -60,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: legionir/sweetmelon@v2.5.2
+      - uses: legionir/sweetmelon@v2.6.0
         with:
           target: aab
           www: www
@@ -81,7 +81,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: legionir/sweetmelon@v2.5.2
+      - uses: legionir/sweetmelon@v2.6.0
         with:
           target: ios
           www: www
