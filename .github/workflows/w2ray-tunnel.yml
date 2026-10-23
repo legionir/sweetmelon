@@ -57,7 +57,7 @@ jobs:
           assert s != s2, 'w2ray_tunnel entry not found'
           open(p, 'w').write(s2)
           PY
-          dart run bin/sweetmelon.dart sync --apply
+          dart run bin/sweetmelon.dart sync --apply --force
 
       - name: Module unit tests (JVM)
         working-directory: android
