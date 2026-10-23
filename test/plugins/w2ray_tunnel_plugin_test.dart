@@ -75,7 +75,10 @@ void main() {
   test('results come back with string keys', () async {
     answer = (_) => {
           'state': 'connected',
-          'share': {'enabled': true, 'clients': ['192.168.1.5']},
+          'share': {
+            'enabled': true,
+            'clients': ['192.168.1.5']
+          },
         };
     final status = await plugin.onCall('status', {}) as Map;
     expect(status['state'], 'connected');
