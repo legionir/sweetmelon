@@ -61,7 +61,7 @@ jobs:
 
       - name: Module unit tests (JVM)
         working-directory: android
-        run: ./gradlew :w2ray_tunnel:testDebugUnitTest --no-daemon --stacktrace
+        run: bash ./gradlew :w2ray_tunnel:testDebugUnitTest --no-daemon --stacktrace
 
       - name: Build a debug APK (arm64)
         run: flutter build apk --debug --target-platform android-arm64
