@@ -11,6 +11,36 @@ pins a core release in `sweetmelon.yaml` (`core: "2.4"`).
 
 Fixes for an older minor are made on its `release/x.y` branch and tagged there.
 
+## [2.7.0]
+
+A VPN and a shareable SOCKS5 proxy for the w2ray tunnel. One plugin, off unless
+an app asks for it; apps that do not use it get no native code at all.
+
+### Added
+- **`w2rayTunnel`** (Android) connects the phone to a
+  [w2ray](https://github.com/legionir/w2ray) tunnel server (WebSocket tunnel,
+  `src/tunnel`):
+  - a system-wide **VPN** through
+    [hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel) (vendored at
+    commit 9b2c232, v2.19.1 + 6: 16 KB page-size builds, ICMP echo, mapped DNS),
+    with split tunnelling (exclude or include apps), "bypass LAN", IPv6 leak
+    protection, kill switch, automatic recovery and a restart on network changes;
+  - **sharing**: a SOCKS5 listener on a port of your choice, so devices on your
+    Wi-Fi or hotspot use the phone's connection to the server. Optional login,
+    connection limit, refusal of loopback and private destinations,
+    `mode: 'proxy'` for sharing without a VPN;
+  - the client protocol of `tunnel-client.js` in Kotlin: own RFC 6455 client
+    (TLS server name and `Host` header independent of the address, certificate
+    check by name), tunnels kept ready so a new connection skips TLS, upgrade and
+    password check, no retry after a wrong password (the server bans after five),
+    backpressure both ways, DNS over TCP for UDP port 53.
+  - Methods: `prepare`, `start`, `stop`, `status`, `logs`, `setShare`,
+    `addresses`, `apps`, `appIcon`, `test`, `netInfo`, `openVpnSettings`; events
+    `w2rayTunnel.state`, `.log`, `.stats`. See `lib/plugins/w2ray_tunnel/README.md`.
+- `android/w2ray_tunnel`: the Gradle module behind the plugin. `settings.gradle.kts`
+  includes it only when `w2ray_tunnel` is enabled in `sweetmelon.yaml`. The
+  engine runs in plain JVM unit tests (`:w2ray_tunnel:testDebugUnitTest`).
+
 ## [2.6.0]
 
 AI on the device. Three plugins, off unless an app asks for them; the user

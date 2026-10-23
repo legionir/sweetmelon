@@ -42,7 +42,7 @@ checkboxes for APK, AAB and iOS. An empty field keeps the value from
 ## Pin the core
 
 ```yaml
-- uses: legionir/sweetmelon@v2.6.0
+- uses: legionir/sweetmelon@v2.7.0
 ```
 
 Use an exact tag. Patch releases only fix bugs; see [Versioning](./versioning).

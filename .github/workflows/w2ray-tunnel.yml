@@ -1,0 +1,110 @@
+name: w2ray tunnel (Android module)
+
+# The w2rayTunnel plugin brings a Gradle module with C code (hev-socks5-tunnel) and a VPN service.
+# This workflow builds it with the plugin turned on, runs its JVM tests, and checks that the app
+# still builds without it.
+on:
+  push:
+    branches: [main, 'claude/**']
+    paths:
+      - android/**
+      - lib/plugins/w2ray_tunnel/**
+      - .github/workflows/w2ray-tunnel.yml
+  pull_request:
+    paths:
+      - android/**
+      - lib/plugins/w2ray_tunnel/**
+      - .github/workflows/w2ray-tunnel.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: w2ray-tunnel-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  with-module:
+    name: Plugin on - tests and APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free disk space
+        run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost /opt/hostedtoolcache/CodeQL /usr/share/swift
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Turn the plugin on
+        run: |
+          python3 - <<'PY'
+          import re
+          p = 'sweetmelon.yaml'
+          s = open(p).read()
+          s2 = re.sub(r'(?m)^(  w2ray_tunnel:[ \t]*(?:#.*)?\n(?:[ \t]*(?:#.*)?\n)*?    enabled:[ \t]*)false', r'\1true', s, count=1)
+          assert s != s2, 'w2ray_tunnel entry not found'
+          open(p, 'w').write(s2)
+          PY
+          dart run bin/sweetmelon.dart sync --apply
+
+      - name: Module unit tests (JVM)
+        working-directory: android
+        run: ./gradlew :w2ray_tunnel:testDebugUnitTest --no-daemon --stacktrace
+
+      - name: Build a debug APK (arm64)
+        run: flutter build apk --debug --target-platform android-arm64
+
+      - name: The APK carries the tunnel library
+        run: |
+          apk=build/app/outputs/flutter-apk/app-debug.apk
+          unzip -l "$apk" | grep -E "lib/arm64-v8a/libhev-socks5-tunnel.so"
+
+      - name: Test report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: w2ray-tunnel-test-report
+          path: build/w2ray_tunnel/reports
+          if-no-files-found: ignore
+
+  without-module:
+    name: Plugin off - the app still builds
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free disk space
+        run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost /opt/hostedtoolcache/CodeQL /usr/share/swift
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Build a debug APK (arm64)
+        run: flutter build apk --debug --target-platform android-arm64
+
+      - name: The APK has no tunnel library
+        run: |
+          apk=build/app/outputs/flutter-apk/app-debug.apk
+          if unzip -l "$apk" | grep -q "libhev-socks5-tunnel.so"; then echo "unexpected library"; exit 1; fi

@@ -175,6 +175,101 @@ export interface LlmChatOptions {
   };
 }
 
+// ── w2ray tunnel types ──
+export interface W2rayShareConfig {
+  enabled: boolean;
+  /** Address to listen on. Default '0.0.0.0'. */
+  bind?: string;
+  /** Default 1080. */
+  port?: number;
+  authEnabled?: boolean;
+  username?: string;
+  password?: string;
+  maxConnections?: number;
+  /** Allow destinations on private networks. Loopback, link-local and multicast are always refused. */
+  allowPrivate?: boolean;
+}
+export interface W2rayConfig {
+  /** 'wss://host:4431/api/stream', instead of serverHost / serverPort / useTls / wsPath. */
+  url?: string;
+  serverHost?: string;
+  serverPort?: number;
+  useTls?: boolean;
+  wsPath?: string;
+  password: string;
+  sni?: string;
+  hostHeader?: string;
+  allowInsecure?: boolean;
+  connectTimeoutMs?: number;
+  handshakeTimeoutMs?: number;
+  pingIntervalSec?: number;
+  idleTimeoutMs?: number;
+  bufferSize?: number;
+  warmPool?: number;
+  maxConnections?: number;
+  preferIpv6?: boolean;
+  /** 'vpn' (default) or 'proxy' (sharing only, needs share.enabled). */
+  mode?: 'vpn' | 'proxy';
+  label?: string;
+  tunnelMtu?: number;
+  enableIpv4?: boolean;
+  enableIpv6?: boolean;
+  blockIpv6?: boolean;
+  globalMode?: boolean;
+  bypassLan?: boolean;
+  remoteDns?: boolean;
+  mapDnsAddress?: string;
+  mapDnsPort?: number;
+  mapDnsNetwork?: string;
+  mapDnsNetmask?: string;
+  mapDnsCacheSize?: number;
+  dnsIpv4?: string;
+  dnsIpv6?: string;
+  udpDns?: boolean;
+  icmpReply?: boolean;
+  tcpBufferSize?: number;
+  taskStackSize?: number;
+  maxSessionCount?: number;
+  logLevel?: 'debug' | 'info' | 'warn' | 'error';
+  splitMode?: 'off' | 'exclude' | 'include';
+  apps?: string[];
+  excludeGoogleServices?: boolean;
+  killSwitch?: boolean;
+  autoReconnect?: boolean;
+  notification?: { connecting?: string; connected?: string; reconnecting?: string; disconnect?: string; download?: string; upload?: string };
+  share?: W2rayShareConfig;
+}
+export type W2rayState = 'idle' | 'connecting' | 'connected' | 'reconnecting' | 'disconnecting' | 'error';
+export interface W2rayShareStatus {
+  enabled: boolean;
+  bind?: string;
+  port?: number;
+  auth?: boolean;
+  username?: string;
+  clients?: string[];
+  connections?: number;
+  totalConnections?: number;
+  /** Bytes sent to the shared clients. */
+  rx?: number;
+  /** Bytes received from the shared clients. */
+  tx?: number;
+}
+export interface W2rayStatus {
+  state: W2rayState;
+  message: string | null;
+  mode: string;
+  label: string;
+  server: string;
+  connectedAt: number;
+  rx: number;
+  tx: number;
+  rxRate: number;
+  txRate: number;
+  connections: number;
+  share: W2rayShareStatus;
+  running: boolean;
+}
+
 // ── NativeSDK Interface ──
 export interface NativeSDKInterface {
   waitForReady(timeoutMs?: number): Promise<NativeBridgeInfo>;
@@ -379,6 +474,28 @@ export interface NativeSDKInterface {
     stopSpeaking(): Promise<{ stopped: boolean }>;
     setVolume(volume: number): Promise<{ volume: number }>;
     status(): Promise<any>;
+    getInfo(): Promise<any>;
+  };
+
+  w2rayTunnel: {
+    /** Shows the system VPN dialog the first time; resolves true when allowed. */
+    prepare(): Promise<boolean>;
+    /** Returns at once; follow 'w2rayTunnel.state' events. */
+    start(config: W2rayConfig): Promise<boolean>;
+    stop(): Promise<boolean>;
+    status(): Promise<W2rayStatus>;
+    logs(): Promise<{ level: 'D' | 'I' | 'W' | 'E'; time: number; message: string }[]>;
+    clearLogs(): Promise<boolean>;
+    /** Starts, changes or stops sharing while connected. */
+    setShare(share: W2rayShareConfig): Promise<W2rayStatus>;
+    /** Where other devices can reach this phone. */
+    addresses(): Promise<{ interface: string; address: string; ipv6: boolean; kind: 'wifi' | 'hotspot' | 'usb' | 'bluetooth' | 'mobile' | 'other' }[]>;
+    apps(): Promise<{ packageName: string; appName: string; isSystem: boolean }[]>;
+    /** Base64 PNG, or null. */
+    appIcon(packageName: string, size?: number): Promise<string | null>;
+    test(config: W2rayConfig, deep?: boolean): Promise<{ serverMs: number; targetMs?: number }>;
+    netInfo(): Promise<{ ip?: string; country?: string; countryCode?: string; region?: string; city?: string; isp?: string; org?: string; timezone?: string; serverMs: number; targetMs: number }>;
+    openVpnSettings(): Promise<boolean>;
     getInfo(): Promise<any>;
   };
 

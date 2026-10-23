@@ -205,6 +205,9 @@ class MainActivity : FlutterActivity() {
                 else -> result.notImplemented()
             }
         }
+
+        // ── w2ray tunnel (optional module, see W2rayTunnelHost) ──
+        W2rayTunnelHost.register(this, flutterEngine)
     }
 
     // Volume button interception: only while the `volume_buttons` plugin is

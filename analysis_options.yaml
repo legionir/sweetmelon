@@ -86,6 +86,7 @@ analyzer:
     - lib/plugins/udp_server/**
     - lib/plugins/video_player/**
     - lib/plugins/volume_buttons/**
+    - lib/plugins/w2ray_tunnel/**
     - lib/plugins/wake_lock/**
     - lib/plugins/websocket/**
     - lib/plugins/websocket_server/**
@@ -110,6 +111,7 @@ analyzer:
     - test/plugins/push_notification_plugin_test.dart
     - test/plugins/qr_scanner_plugin_test.dart
     - test/plugins/security_plugins_test.dart
+    - test/plugins/w2ray_tunnel_plugin_test.dart
     - test/plugins/websocket_plugin_test.dart
     # </sweetmelon:disabled-plugin-sources>
 
