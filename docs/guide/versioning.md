@@ -28,14 +28,14 @@ version (`sweetmelon --version`):
 
 ## Pin an exact tag
 
-Use an exact tag (`v2.6.0`), never a branch or a floating tag:
+Use an exact tag (`v2.7.0`), never a branch or a floating tag:
 
 ```yaml
 dependencies:
   sweetmelon:
     git:
       url: https://github.com/legionir/sweetmelon.git
-      ref: v2.6.0
+      ref: v2.7.0
 ```
 
 ## How a release is made

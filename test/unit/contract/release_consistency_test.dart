@@ -12,7 +12,7 @@ import 'package:yaml/yaml.dart';
 /// To release 2.6.1: set it in `lib/core_version.dart`, `pubspec.yaml`
 /// (`version: 2.6.1+1`) and `project.version` in `sweetmelon.yaml`, add a
 /// `## [2.6.1]` section at the top of CHANGELOG.md, and for a new minor change
-/// `core: "2.6"` in `sweetmelon.yaml` and the `@v2.x.y` pins in the docs.
+/// `core: "2.7"` in `sweetmelon.yaml` and the `@v2.x.y` pins in the docs.
 void main() {
   final parts = sweetmelonCoreVersion.split('.');
   final minor = '${parts[0]}.${parts[1]}';

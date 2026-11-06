@@ -1,0 +1,17 @@
+name: w2ray_tunnel_plugin
+description: VPN and SOCKS5 sharing through a w2ray WebSocket tunnel
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  sweetmelon:
+    path: ../../..
+  flutter:
+    sdk: flutter
+  plugin_engine:
+    path: ../../packages/plugin_engine
+  core:
+    path: ../../packages/core

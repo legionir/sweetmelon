@@ -380,6 +380,13 @@
   },
   {
     "kind": "lazy",
+    "id": "w2rayTunnel",
+    "yamlKey": "w2ray_tunnel",
+    "importPath": "plugins/w2ray_tunnel/lib/w2ray_tunnel_plugin.dart",
+    "code": "W2rayTunnelPlugin(eventEmitter: emitter)"
+  },
+  {
+    "kind": "lazy",
     "id": "videoPlayer",
     "yamlKey": "video_player",
     "importPath": "plugins/video_player/lib/video_player_plugin.dart",

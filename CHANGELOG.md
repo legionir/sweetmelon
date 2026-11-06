@@ -11,6 +11,51 @@ pins a core release in `sweetmelon.yaml` (`core: "2.4"`).
 
 Fixes for an older minor are made on its `release/x.y` branch and tagged there.
 
+## [2.7.0]
+
+A VPN and a shareable SOCKS5 proxy for the w2ray tunnel. One plugin, off unless
+an app asks for it; apps that do not use it get no native code at all.
+
+### Added
+- **`w2rayTunnel`** (Android) connects the phone to a
+  [w2ray](https://github.com/legionir/w2ray) tunnel server (WebSocket tunnel,
+  `src/tunnel`):
+  - a system-wide **VPN** through
+    [hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel) (vendored at
+    commit 9b2c232, v2.19.1 + 6: 16 KB page-size builds, ICMP echo, mapped DNS),
+    with split tunnelling (exclude or include apps), "bypass LAN", IPv6 leak
+    protection, kill switch, automatic recovery and a restart on network changes;
+  - **sharing**: a SOCKS5 listener on a port of your choice, so devices on your
+    Wi-Fi or hotspot use the phone's connection to the server. Optional login,
+    connection limit, refusal of loopback and private destinations,
+    `mode: 'proxy'` for sharing without a VPN;
+  - the client protocol of `tunnel-client.js` in Kotlin: own RFC 6455 client
+    (TLS server name and `Host` header independent of the address, certificate
+    check by name), tunnels kept ready so a new connection skips TLS, upgrade and
+    password check, no retry after a wrong password (the server bans after five),
+    backpressure both ways, DNS over TCP for UDP port 53.
+  - Methods: `prepare`, `start`, `stop`, `status`, `logs`, `setShare`,
+    `addresses`, `apps`, `appIcon`, `test`, `netInfo`, `openVpnSettings`; events
+    `w2rayTunnel.state`, `.log`, `.stats`. See `lib/plugins/w2ray_tunnel/README.md`.
+- `android/w2ray_tunnel`: the Gradle module behind the plugin. `settings.gradle.kts`
+  includes it only when `w2ray_tunnel` is enabled in `sweetmelon.yaml`. The
+  engine runs in plain JVM unit tests (`:w2ray_tunnel:testDebugUnitTest`).
+
+### Also in 2.7.0: UDP, Worker exit, Cloudflare fallback (`w2rayTunnel`)
+- **UDP flows**: with a w2ray server that supports it, UDP other than DNS (NTP, games, calls) is carried through the tunnel.
+  One extra WebSocket is a UDP session (`{t:"udp"}` after `auth`); binary messages are frames with an 8-byte header
+  (`TYPE FLAGS FLOWID LEN`, big endian) and the types OPEN / DATA / CLOSE / ERROR / RESET. A flow is
+  `(association, app address, destination)`; flow ids never repeat. Everything is bounded (256 flows, write queue,
+  datagrams waiting for the session); an older server is detected in 4 s and UDP then stays off for 5 minutes.
+  TCP and DNS (UDP 53 as DNS over TCP) are unchanged. New setting `udpRelay` (default `true`).
+- **`blockQuic`** (default `true`): QUIC (UDP 443) is answered with a Version Negotiation packet so a browser falls back
+  to TCP at once instead of waiting on a silent drop. Turn it off to carry QUIC through the UDP flows.
+- **`transport: "worker"`**: talk to a `ws-cf-tunnel` Cloudflare Worker directly (`Authorization: Bearer` + `X-Target`), no
+  w2ray server. TCP only.
+- **Cloudflare exit with fallback**: `fallback` (your w2ray server) is used for IP literals in Cloudflare's ranges and for
+  destinations the Worker answers 502 for (remembered 10 minutes per host:port); `exit: "server"` ignores the Worker;
+  `cloudflareFallback: false` turns the fallback off. A refused Worker token never falls back.
+
 ## [2.6.0]
 
 AI on the device. Three plugins, off unless an app asks for them; the user

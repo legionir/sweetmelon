@@ -90,9 +90,9 @@ The example loads from the bundled `assets/www` directory — no dev server is r
 
 | Mode | You keep | How |
 | --- | --- | --- |
-| **Action** (`ref`) | `www/`, `sweetmelon.yaml`, icon | `uses: legionir/sweetmelon@v2.6.0` in your workflow. [Guide](docs/guide/build-from-web.md) |
+| **Action** (`ref`) | `www/`, `sweetmelon.yaml`, icon | `uses: legionir/sweetmelon@v2.7.0` in your workflow. [Guide](docs/guide/build-from-web.md) |
 | **Template** | the same, started from a template | `dart run bin/sweetmelon.dart init ../my-app --package-name com.acme.app --app-name "My App" --apply` |
-| **Clone / fork** | the whole project | Clone or fork at a release tag (`v2.6.0`), write the app, run the build workflow. Take patch releases with `git merge v2.4.1`. |
+| **Clone / fork** | the whole project | Clone or fork at a release tag (`v2.7.0`), write the app, run the build workflow. Take patch releases with `git merge v2.4.1`. |
 | **Package** | your own Flutter shell | `sweetmelon:` as a git dependency (below). |
 
 The core is versioned with [SemVer](https://semver.org): patch releases (`2.4.x`) only fix bugs, so an app pinned to `2.4` is never broken by them; a new minor or major is taken on purpose. See [CHANGELOG.md](CHANGELOG.md) and the [versioning guide](docs/guide/versioning.md).
@@ -107,7 +107,7 @@ dependencies:
   sweetmelon:
     git:
       url: https://github.com/legionir/sweetmelon.git
-      ref: v2.6.0   # an exact tag; patch releases (v2.4.1 ...) only fix bugs
+      ref: v2.7.0   # an exact tag; patch releases (v2.4.1 ...) only fix bugs
 ```
 
 Then, in the app:
@@ -304,6 +304,7 @@ Every plugin documents its methods, parameters, return shapes, and events in its
 | [`modelManager`](lib/plugins/model_manager/README.md) | `NativeSDK.modelManager` | AI models: import from the device, list, remove |
 | [`llm`](lib/plugins/llm/README.md) | `NativeSDK.llm` | On-device chat with GGUF language models (streaming) |
 | [`speechOffline`](lib/plugins/speech_offline/README.md) | `NativeSDK.speechOffline` | Offline speech recognition and synthesis |
+| [`w2rayTunnel`](lib/plugins/w2ray_tunnel/README.md) | `NativeSDK.w2rayTunnel` | VPN and SOCKS5 sharing through a w2ray tunnel (Android) |
 
 ### UI, Dialogs & Notifications
 

@@ -9,12 +9,12 @@
 # Release of the Sweetmelon core this project is built for. A new minor or major
 # release is never picked up silently; change this on purpose after reading
 # CHANGELOG.md.
-core: "2.6"
+core: "2.7"
 
 project:
   name: sweetmelon
   display_name: Sweetmelon
-  version: 2.6.0
+  version: 2.7.0
   min_sdk: "3.0.0"
 
   # مسیر استاتیک اپلیکیشن وب
@@ -118,6 +118,10 @@ plugins:
   socket:
     enabled: false
   ping_dns:
+    enabled: false
+  # VPN and SOCKS5 sharing through a w2ray WebSocket tunnel (Android). Turning it
+  # on adds the android/w2ray_tunnel module: a VPN service and hev-socks5-tunnel.
+  w2ray_tunnel:
     enabled: false
   wifi_manager:
     enabled: false

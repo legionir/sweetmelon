@@ -68,4 +68,8 @@ dependencies {
     // Required by flutter_local_notifications on minSdk < 26.
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 
+    // Present only when the w2rayTunnel plugin is enabled (android/settings.gradle.kts).
+    if (rootProject.findProject(":w2ray_tunnel") != null) {
+        implementation(project(":w2ray_tunnel"))
+    }
 }

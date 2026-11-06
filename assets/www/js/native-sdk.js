@@ -404,6 +404,26 @@
       getInfo: function () { return call('speechOffline', 'getInfo', {}); }
     },
 
+    w2rayTunnel: {
+      // Shows the system VPN dialog the first time; resolves true when allowed.
+      prepare: function () { return call('w2rayTunnel', 'prepare', {}, { timeout: 120000 }); },
+      // config: { url | serverHost/serverPort/useTls/wsPath, password, mode, share, ... } (see the plugin README)
+      start: function (config) { return call('w2rayTunnel', 'start', { config: config }, { timeout: 30000 }); },
+      stop: function () { return call('w2rayTunnel', 'stop', {}); },
+      status: function () { return call('w2rayTunnel', 'status', {}); },
+      logs: function () { return call('w2rayTunnel', 'logs', {}); },
+      clearLogs: function () { return call('w2rayTunnel', 'clearLogs', {}); },
+      // Starts, changes or stops the shared SOCKS5 port while connected.
+      setShare: function (share) { return call('w2rayTunnel', 'setShare', { share: share }, { timeout: 30000 }); },
+      addresses: function () { return call('w2rayTunnel', 'addresses', {}); },
+      apps: function () { return call('w2rayTunnel', 'apps', {}, { timeout: 60000 }); },
+      appIcon: function (packageName, size) { return call('w2rayTunnel', 'appIcon', { packageName: packageName, size: size || 48 }); },
+      test: function (config, deep) { return call('w2rayTunnel', 'test', { config: config, deep: !!deep }, { timeout: 60000 }); },
+      netInfo: function () { return call('w2rayTunnel', 'netInfo', {}, { timeout: 30000 }); },
+      openVpnSettings: function () { return call('w2rayTunnel', 'openVpnSettings', {}); },
+      getInfo: function () { return call('w2rayTunnel', 'getInfo', {}); }
+    },
+
     videoPlayer: {
       create: function (o) { return call('videoPlayer', 'create', o || {}); },
       play: function (id) { return call('videoPlayer', 'play', { playerId: id }); },

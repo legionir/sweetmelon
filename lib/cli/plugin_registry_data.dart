@@ -525,6 +525,24 @@ class PluginRegistryData {
       description: 'Offline speech recognition and synthesis',
     ),
     PluginDefinition(
+      id: 'w2ray_tunnel',
+      dartClassName: 'W2rayTunnelPlugin',
+      jsNamespace: 'w2rayTunnel',
+      importPath:
+          'package:sweetmelon/plugins/w2ray_tunnel/lib/w2ray_tunnel_plugin.dart',
+      registrationCode: "W2rayTunnelPlugin(eventEmitter: emitter)",
+      needsEmitter: true,
+      dependencies: {},
+      androidPermissions: [
+        'android.permission.FOREGROUND_SERVICE',
+        'android.permission.FOREGROUND_SERVICE_SPECIAL_USE',
+        'android.permission.POST_NOTIFICATIONS',
+        'android.permission.QUERY_ALL_PACKAGES',
+      ],
+      iosPermissions: {},
+      description: 'VPN and SOCKS5 sharing through a w2ray tunnel (Android)',
+    ),
+    PluginDefinition(
       id: 'video_player',
       dartClassName: 'VideoPlayerPlugin',
       jsNamespace: 'videoPlayer',
