@@ -226,6 +226,8 @@ export interface W2rayConfig {
   dnsIpv4?: string;
   dnsIpv6?: string;
   udpDns?: boolean;
+  /** Answer QUIC (UDP 443) with a Version Negotiation packet so apps fall back to TCP at once. Default true. */
+  blockQuic?: boolean;
   icmpReply?: boolean;
   tcpBufferSize?: number;
   taskStackSize?: number;

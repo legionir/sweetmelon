@@ -21,8 +21,8 @@ import java.util.concurrent.atomic.AtomicInteger
  * SOCKS5 listener (RFC 1928, RFC 1929) in front of an [Engine].
  *
  * - `CONNECT` goes through the tunnel.
- * - `UDP ASSOCIATE` relays DNS only (datagrams to port 53 become DNS over TCP through the tunnel);
- *   other datagrams are dropped because the tunnel protocol carries TCP only.
+ * - `UDP ASSOCIATE` relays DNS (datagrams to port 53 become DNS over TCP through the tunnel). Other datagrams
+ *   are dropped; with [blockQuic], QUIC to port 443 is refused loudly (see [QuicBlocker]).
  *
  * Two uses: a loopback listener with random credentials for hev-socks5-tunnel, and the listener the user
  * shares with other devices ([restrictDestinations]).
@@ -41,6 +41,10 @@ class SocksServer(
     private val name: String,
     private val log: (Char, String) -> Unit,
 ) {
+    /** Answer client QUIC Initials to UDP/443 with Version Negotiation so the browser falls back to TCP at once. */
+    @Volatile
+    var blockQuic: Boolean = false
+
     val counters = Counters()
 
     @Volatile
@@ -262,6 +266,21 @@ class SocksServer(
             val data = pkt.data.copyOfRange(pkt.offset, pkt.offset + pkt.length)
             val parsed = parseUdp(data) ?: continue
             if (parsed.port != 53) {
+                if (blockQuic && parsed.port == 443) {
+                    val vn = QuicBlocker.versionNegotiation(parsed.payload)
+                    if (vn != null) {
+                        try {
+                            val resp = data.copyOfRange(0, parsed.headerLength) + vn
+                            udp.send(DatagramPacket(resp, resp.size, InetSocketAddress(pkt.address, pkt.port)))
+                        } catch (_: Exception) {
+                        }
+                    }
+                    if (!warned) {
+                        warned = true
+                        log('I', "$name: QUIC (UDP 443) is blocked, apps fall back to TCP")
+                    }
+                    continue
+                }
                 if (!warned) {
                     warned = true
                     log('I', "$name: UDP to port ${parsed.port} dropped (only DNS is relayed)")

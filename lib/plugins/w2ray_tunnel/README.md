@@ -92,6 +92,7 @@ Mode and VPN:
 | `mapDnsAddress`, `mapDnsPort`, `mapDnsNetwork`, `mapDnsNetmask`, `mapDnsCacheSize` | `198.18.0.2`, `53`, `100.64.0.0`, `255.192.0.0`, `10000` | |
 | `dnsIpv4`, `dnsIpv6` | `8.8.8.8`, `2001:4860:4860::8888` | used when `remoteDns` is `false` |
 | `udpDns` | `true` | relay DNS datagrams as DNS over TCP |
+| `blockQuic` | `true` | answer QUIC (UDP 443) with Version Negotiation so browsers fall back to TCP at once instead of waiting |
 | `icmpReply` | `false` | answer pings locally |
 | `tcpBufferSize`, `taskStackSize`, `maxSessionCount` | `65536`, `86016`, `0` | hev tuning |
 | `logLevel` | `warn` | hev: `debug`, `info`, `warn`, `error` |
