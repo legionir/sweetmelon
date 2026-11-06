@@ -96,6 +96,7 @@ class Engine(
         fatalMessage?.let { throw TunnelException(it, FailKind.AUTH) }
         if (stopped.get()) throw TunnelException("Stopped", FailKind.TRANSPORT)
         lastDemandMs = System.currentTimeMillis()
+        if (cfg.isWorker) return openWorkerLink(host, port, timeoutMs)
         val ready = takeWarm()
         var link = ready ?: newLink()
         try {
@@ -125,6 +126,7 @@ class Engine(
      * This is the "ping" of the server and the first check before a VPN starts.
      */
     fun probe(): Long {
+        if (cfg.isWorker) return probeWorker()
         val t0 = System.currentTimeMillis()
         val link = newLink()
         try {
@@ -150,6 +152,52 @@ class Engine(
         val ms = System.currentTimeMillis() - t0
         link.close()
         return ms
+    }
+
+    // ── Worker transport ────────────────────────────────────────────
+
+    /**
+     * One WebSocket to the Worker. The destination travels in the upgrade request and the Worker connects to it
+     * before it answers 101, so a failure arrives as an HTTP status: 403 bad token, 400 bad destination,
+     * 502 the Worker could not reach it.
+     */
+    private fun openWorkerLink(host: String, port: Int, timeoutMs: Long): Link {
+        val target = (if (host.contains(':')) "[$host]" else host) + ":" + port
+        try {
+            val ws = WsClient.connect(
+                cfg,
+                newSocket,
+                listOf("Authorization" to "Bearer ${cfg.password}", "X-Target" to target),
+                timeoutMs.toInt().coerceAtLeast(1000),
+            )
+            val link = Link(System.currentTimeMillis(), worker = true)
+            link.ws = ws
+            ws.start(link) { r -> newThread(r) }
+            noteSuccess()
+            return link
+        } catch (e: WsException) {
+            val te = when {
+                e.httpStatus == 403 -> TunnelException("The Worker refused the token", FailKind.AUTH, cause = e)
+                e.httpStatus == 400 -> TunnelException("Invalid destination $target", FailKind.TARGET, 0x02, e)
+                e.httpStatus == 502 -> TunnelException("The Worker could not reach $target", FailKind.TARGET, 0x04, e)
+                e.httpStatus == 404 -> TunnelException("This address is not a ws-cf-tunnel Worker (HTTP 404)", FailKind.TRANSPORT, cause = e)
+                else -> TunnelException(e.message ?: "Cannot connect", FailKind.TRANSPORT, cause = e)
+            }
+            handleFailure(te)
+            throw te
+        }
+    }
+
+    /** The Worker has no handshake of its own: the "ping" is a connection to a public TCP service. */
+    private fun probeWorker(): Long {
+        val t0 = System.currentTimeMillis()
+        try {
+            openWorkerLink("8.8.8.8", 53, cfg.handshakeTimeoutMs.toLong()).close()
+        } catch (e: TunnelException) {
+            // The Worker answered but could not reach the probe target: the Worker itself works.
+            if (e.kind != FailKind.TARGET) throw e
+        }
+        return System.currentTimeMillis() - t0
     }
 
     private fun newLink(): Link {
@@ -195,7 +243,7 @@ class Engine(
     }
 
     private fun topUpAsync() {
-        if (cfg.warmPool <= 0 || stopped.get()) return
+        if (cfg.isWorker || cfg.warmPool <= 0 || stopped.get()) return
         if (!refilling.compareAndSet(false, true)) return
         execute {
             try {

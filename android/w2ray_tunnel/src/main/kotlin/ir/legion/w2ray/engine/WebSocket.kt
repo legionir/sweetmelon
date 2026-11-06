@@ -25,7 +25,9 @@ import javax.net.ssl.SSLSocket
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
-class WsException(message: String, val closeCode: Int = 1006, cause: Throwable? = null) : IOException(message, cause)
+/** [httpStatus] is the status of a refused upgrade request (0 when there was none). */
+class WsException(message: String, val closeCode: Int = 1006, cause: Throwable? = null, val httpStatus: Int = 0) :
+    IOException(message, cause)
 
 interface WsListener {
     fun onText(text: String)
@@ -294,7 +296,13 @@ class WsClient private constructor(
          * Opens a socket, optionally TLS, and performs the HTTP upgrade. Blocks. [newSocket] returns an
          * unconnected socket (on Android: one that is protected from the VPN).
          */
-        fun connect(cfg: ServerConfig, newSocket: () -> Socket): WsClient {
+        fun connect(
+            cfg: ServerConfig,
+            newSocket: () -> Socket,
+            extraHeaders: List<Pair<String, String>> = emptyList(),
+            /** Time to wait for the answer to the upgrade request. */
+            handshakeMs: Int = cfg.handshakeTimeoutMs,
+        ): WsClient {
             val deadline = System.currentTimeMillis() + cfg.connectTimeoutMs
             val plain = connectTcp(cfg, newSocket, deadline)
             try {
@@ -303,7 +311,7 @@ class WsClient private constructor(
                     plain.keepAlive = true
                 } catch (_: Exception) {
                 }
-                plain.soTimeout = cfg.handshakeTimeoutMs
+                plain.soTimeout = handshakeMs
                 val sock: Socket = if (cfg.useTls) tls(plain, cfg) else plain
                 val rawIn = BufferedInputStream(sock.getInputStream(), 16 * 1024)
                 val out = sock.getOutputStream()
@@ -321,6 +329,7 @@ class WsClient private constructor(
                 req.append("Accept-Language: en-US,en;q=0.9\r\n")
                 req.append("Cache-Control: no-cache\r\n")
                 req.append("Pragma: no-cache\r\n")
+                for ((k, v) in extraHeaders) req.append("$k: $v\r\n")
                 req.append("\r\n")
                 out.write(req.toString().toByteArray(Charsets.ISO_8859_1))
                 out.flush()
@@ -333,6 +342,7 @@ class WsClient private constructor(
                     throw WsException(
                         if (statusCode == 0) "Server did not answer with HTTP" else "Server refused the WebSocket upgrade (HTTP $statusCode)",
                         closeCode = 1006,
+                        httpStatus = statusCode,
                     )
                 }
                 val headers = HashMap<String, String>()

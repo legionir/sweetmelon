@@ -16,7 +16,15 @@ import java.util.concurrent.atomic.AtomicInteger
  * A stand-in for the w2ray tunnel server (src/tunnel/server.js of the w2ray project): the same WebSocket
  * upgrade, the same JSON control messages and the same close codes, without TLS.
  */
-class FakeW2rayServer(private val password: String, private val path: String = "/api/stream") : AutoCloseable {
+class FakeW2rayServer(
+    private val password: String,
+    private val path: String = "/api/stream",
+    /** Not null: behave like ws-cf-tunnel's worker.js (Bearer token + X-Target on the upgrade, no control frames). */
+    private val workerToken: String? = null,
+) : AutoCloseable {
+    /** `X-Target` values seen in worker mode. */
+    val targets = java.util.Collections.synchronizedList(ArrayList<String>())
+
     private val server = ServerSocket().also { it.bind(InetSocketAddress("127.0.0.1", 0)) }
     val port: Int get() = server.localPort
     val connections = AtomicInteger()
@@ -60,6 +68,10 @@ class FakeW2rayServer(private val password: String, private val path: String = "
             hostHeaders.add(headers["host"] ?: "")
             if (!lines[0].startsWith("GET $path ")) {
                 out.write("HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n".toByteArray())
+                return
+            }
+            if (workerToken != null) {
+                acceptWorker(headers, sock, inp, out)
                 return
             }
             val accept = Base64.getEncoder().encodeToString(
@@ -122,6 +134,53 @@ class FakeW2rayServer(private val password: String, private val path: String = "
                 sock.close()
             } catch (_: Exception) {
             }
+        }
+    }
+
+    /** The worker.js flow: connect first, answer 502 when that fails, 101 when it works, then relay binary frames. */
+    private fun acceptWorker(headers: Map<String, String>, sock: Socket, inp: InputStream, out: OutputStream) {
+        fun reply(code: Int, text: String) {
+            out.write("HTTP/1.1 $code $text\r\nContent-Length: 0\r\n\r\n".toByteArray())
+            out.flush()
+        }
+        if (headers["authorization"] != "Bearer $workerToken") {
+            authFailures.incrementAndGet()
+            reply(403, "Forbidden")
+            return
+        }
+        val x = headers["x-target"].orEmpty()
+        targets.add(x)
+        val host = x.substringBeforeLast(':').trim('[', ']')
+        val port = x.substringAfterLast(':').toIntOrNull()
+        if (host.isEmpty() || port == null) {
+            reply(400, "Bad Request")
+            return
+        }
+        val t = Socket()
+        try {
+            t.connect(InetSocketAddress(host, port), 3000)
+        } catch (e: Exception) {
+            reply(502, "Bad Gateway")
+            return
+        }
+        val accept = Base64.getEncoder().encodeToString(
+            MessageDigest.getInstance("SHA-1").digest((headers["sec-websocket-key"] + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11").toByteArray()),
+        )
+        out.write(("HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: $accept\r\n\r\n").toByteArray())
+        out.flush()
+        pipeTargetToWs(t, sock, out)
+        try {
+            while (true) {
+                val (op, payload) = readFrame(inp) ?: break
+                when (op) {
+                    8 -> break
+                    9 -> writeFrame(out, 10, payload)
+                    2 -> t.getOutputStream().let { it.write(payload); it.flush() }
+                    1 -> if (String(payload) == "fin") t.shutdownOutput()
+                }
+            }
+        } finally {
+            t.close()
         }
     }
 

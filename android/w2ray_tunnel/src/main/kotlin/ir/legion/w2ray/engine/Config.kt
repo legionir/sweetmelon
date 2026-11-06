@@ -7,6 +7,15 @@ import java.net.URI
 /** Thrown when a configuration from JavaScript is unusable. The message is shown to the user. */
 class ConfigException(message: String) : Exception(message)
 
+/** How the client reaches the outside world. */
+enum class Transport {
+    /** A w2ray tunnel server (JSON control frames, one destination per WebSocket). */
+    W2RAY,
+
+    /** A Cloudflare Worker running ws-cf-tunnel's `worker.js`: `Authorization: Bearer` + `X-Target` on the upgrade. */
+    WORKER,
+}
+
 /** Connection to a w2ray tunnel server (see `src/tunnel` in the w2ray project). */
 data class ServerConfig(
     val host: String,
@@ -28,7 +37,10 @@ data class ServerConfig(
     val warmPool: Int,
     val maxConnections: Int,
     val preferIpv6: Boolean,
+    val transport: Transport = Transport.W2RAY,
 ) {
+    val isWorker: Boolean get() = transport == Transport.WORKER
+
     val tlsName: String get() = sni.ifEmpty { host }
 
     /** Value of the `Host` header: [hostHeader] as given, else [sni] or [host] with the port when it is not the default. */
@@ -78,6 +90,11 @@ data class ServerConfig(
                 warmPool = o.optInt("warmPool", 2).coerceIn(0, 16),
                 maxConnections = o.optInt("maxConnections", 1024).coerceIn(8, 8192),
                 preferIpv6 = o.optBoolean("preferIpv6", false),
+                transport = when (o.optString("transport", "w2ray").lowercase()) {
+                    "worker" -> Transport.WORKER
+                    "w2ray", "" -> Transport.W2RAY
+                    else -> throw ConfigException("Unknown transport")
+                },
             )
             cfg.validate()
             return cfg
@@ -108,7 +125,10 @@ data class ServerConfig(
     fun validate() {
         if (host.isEmpty()) throw ConfigException("Server address is required")
         if (port !in 1..65535) throw ConfigException("Server port must be between 1 and 65535")
-        if (password.isEmpty()) throw ConfigException("Password is required")
+        if (password.isEmpty()) throw ConfigException(if (isWorker) "The Worker token is required" else "Password is required")
+        if (isWorker && (password.any { it.code < 0x21 || it.code > 0x7e })) {
+            throw ConfigException("The Worker token contains invalid characters")
+        }
         if (host.any { it.isWhitespace() || it == '/' } || sni.any { it.isWhitespace() }) {
             throw ConfigException("Server address or SNI contains invalid characters")
         }

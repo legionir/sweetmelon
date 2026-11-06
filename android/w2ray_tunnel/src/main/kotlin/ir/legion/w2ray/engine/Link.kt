@@ -30,11 +30,16 @@ interface Sink {
  * JSON text frames `{t, p, ts}` for control (`auth`, `auth_ok`, `connect`, `connected`, `error`) and raw
  * binary frames for the byte stream. One link carries one destination.
  */
-class Link internal constructor(val createdAt: Long) : WsListener {
+class Link internal constructor(val createdAt: Long, worker: Boolean = false) : WsListener {
     private enum class Phase { AUTH, READY, CONNECTING, OPEN, DEAD }
 
     private val lock = Object()
-    private var phase = Phase.AUTH
+
+    /**
+     * A w2ray link starts in AUTH. A Worker link is open as soon as the upgrade succeeded: the Worker has already
+     * connected to the destination named in the `X-Target` header and speaks no control frames.
+     */
+    private var phase = if (worker) Phase.OPEN else Phase.AUTH
     private var failure: TunnelException? = null
     private var sink: Sink? = null
     private val early = ArrayList<ByteArray>()

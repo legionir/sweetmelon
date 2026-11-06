@@ -65,7 +65,8 @@ Server (one of `url` or `serverHost`):
 |-----|---------|--|
 | `url` | | `wss://host:4431/api/stream` (the `TUNNEL_URL` of the w2ray client) |
 | `serverHost`, `serverPort`, `useTls`, `wsPath` | `443`, `true`, `/` | same, field by field |
-| `password` | required | the tunnel password |
+| `password` | required | the tunnel password (the Worker `AUTH_TOKEN` with `transport: "worker"`) |
+| `transport` | `"w2ray"` | `"worker"`: talk to a ws-cf-tunnel Cloudflare Worker directly (`Authorization: Bearer` + `X-Target` on the upgrade), no w2ray server. TCP only; the Worker cannot reach Cloudflare-hosted destinations (see `fallback`) |
 | `sni` | host | TLS server name |
 | `hostHeader` | `sni` or host | HTTP `Host` of the upgrade request |
 | `allowInsecure` | `false` | accept any certificate |

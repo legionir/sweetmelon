@@ -197,6 +197,11 @@ export interface W2rayConfig {
   useTls?: boolean;
   wsPath?: string;
   password: string;
+  /**
+   * "w2ray" (default): a w2ray tunnel server. "worker": a Cloudflare Worker running ws-cf-tunnel/Cloudflare/worker.js;
+   * `password` is then its AUTH_TOKEN and no w2ray server is needed.
+   */
+  transport?: "w2ray" | "worker";
   sni?: string;
   hostHeader?: string;
   allowInsecure?: boolean;
