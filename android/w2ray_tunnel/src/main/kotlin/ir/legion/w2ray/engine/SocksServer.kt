@@ -45,6 +45,10 @@ class SocksServer(
     @Volatile
     var blockQuic: Boolean = false
 
+    /** Carry UDP other than DNS (NTP, games, calls; QUIC too when [blockQuic] is off) through the tunnel's UDP flows. */
+    @Volatile
+    var relayUdp: Boolean = false
+
     val counters = Counters()
 
     @Volatile
@@ -249,6 +253,7 @@ class SocksServer(
             }
         } finally {
             udp.close()
+            engine.udp.closeOwner(udp)
         }
     }
 
@@ -266,19 +271,46 @@ class SocksServer(
             val data = pkt.data.copyOfRange(pkt.offset, pkt.offset + pkt.length)
             val parsed = parseUdp(data) ?: continue
             if (parsed.port != 53) {
-                if (blockQuic && parsed.port == 443) {
-                    val vn = QuicBlocker.versionNegotiation(parsed.payload)
-                    if (vn != null) {
-                        try {
-                            val resp = data.copyOfRange(0, parsed.headerLength) + vn
-                            udp.send(DatagramPacket(resp, resp.size, InetSocketAddress(pkt.address, pkt.port)))
-                        } catch (_: Exception) {
+                val from = InetSocketAddress(pkt.address, pkt.port)
+                val head = data.copyOfRange(0, parsed.headerLength)
+                // QUIC: answer it so the browser uses TCP now (by default), or carry it when blockQuic is off.
+                val quicRefused = {
+                    if (blockQuic && parsed.port == 443) {
+                        val vn = QuicBlocker.versionNegotiation(parsed.payload)
+                        if (vn != null) {
+                            try {
+                                val resp = head + vn
+                                udp.send(DatagramPacket(resp, resp.size, from))
+                            } catch (_: Exception) {
+                            }
                         }
+                        if (!warned) {
+                            warned = true
+                            log('I', "$name: QUIC (UDP 443) is blocked, apps fall back to TCP")
+                        }
+                        true
+                    } else {
+                        false
                     }
-                    if (!warned) {
-                        warned = true
-                        log('I', "$name: QUIC (UDP 443) is blocked, apps fall back to TCP")
-                    }
+                }
+                if (quicRefused()) continue
+                if (relayUdp && engine.udp.available()) {
+                    engine.udp.send(
+                        udp, "${from.address.hostAddress}:${from.port}", parsed.host, parsed.port, parsed.payload,
+                        reply = { answer ->
+                            try {
+                                val resp = head + answer
+                                if (!udp.isClosed) udp.send(DatagramPacket(resp, resp.size, from))
+                            } catch (_: Exception) {
+                            }
+                        },
+                        unavailable = { _ ->
+                            if (!warned) {
+                                warned = true
+                                log('I', "$name: UDP to port ${parsed.port} dropped (the server has no UDP)")
+                            }
+                        },
+                    )
                     continue
                 }
                 if (!warned) {

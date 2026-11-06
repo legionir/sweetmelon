@@ -41,6 +41,21 @@ an app asks for it; apps that do not use it get no native code at all.
   includes it only when `w2ray_tunnel` is enabled in `sweetmelon.yaml`. The
   engine runs in plain JVM unit tests (`:w2ray_tunnel:testDebugUnitTest`).
 
+### Also in 2.7.0: UDP, Worker exit, Cloudflare fallback (`w2rayTunnel`)
+- **UDP flows**: with a w2ray server that supports it, UDP other than DNS (NTP, games, calls) is carried through the tunnel.
+  One extra WebSocket is a UDP session (`{t:"udp"}` after `auth`); binary messages are frames with an 8-byte header
+  (`TYPE FLAGS FLOWID LEN`, big endian) and the types OPEN / DATA / CLOSE / ERROR / RESET. A flow is
+  `(association, app address, destination)`; flow ids never repeat. Everything is bounded (256 flows, write queue,
+  datagrams waiting for the session); an older server is detected in 4 s and UDP then stays off for 5 minutes.
+  TCP and DNS (UDP 53 as DNS over TCP) are unchanged. New setting `udpRelay` (default `true`).
+- **`blockQuic`** (default `true`): QUIC (UDP 443) is answered with a Version Negotiation packet so a browser falls back
+  to TCP at once instead of waiting on a silent drop. Turn it off to carry QUIC through the UDP flows.
+- **`transport: "worker"`**: talk to a `ws-cf-tunnel` Cloudflare Worker directly (`Authorization: Bearer` + `X-Target`), no
+  w2ray server. TCP only.
+- **Cloudflare exit with fallback**: `fallback` (your w2ray server) is used for IP literals in Cloudflare's ranges and for
+  destinations the Worker answers 502 for (remembered 10 minutes per host:port); `exit: "server"` ignores the Worker;
+  `cloudflareFallback: false` turns the fallback off. A refused Worker token never falls back.
+
 ## [2.6.0]
 
 AI on the device. Three plugins, off unless an app asks for them; the user

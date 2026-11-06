@@ -165,6 +165,7 @@ class W2rayVpnService : VpnService(), Engine.Events {
                 eng, "127.0.0.1", 0, user, pass, req.server.maxConnections, false, false, req.vpn.udpDns, "socks"
             ) { l, m -> Hub.log(l, m) }
             loop.blockQuic = req.vpn.blockQuic
+            loop.relayUdp = req.vpn.udpRelay
             val port = loop.start()
             proxy = loop
 
@@ -199,6 +200,7 @@ class W2rayVpnService : VpnService(), Engine.Events {
             s.maxConnections, true, s.allowPrivate, request?.vpn?.udpDns ?: true, "share"
         ) { l, m -> Hub.log(l, m) }
         server.blockQuic = request?.vpn?.blockQuic ?: true
+        server.relayUdp = request?.vpn?.udpRelay ?: true
         server.start()
         shareServer = server
         publishShare()

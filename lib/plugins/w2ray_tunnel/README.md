@@ -27,10 +27,14 @@ other devices ──► <phone>:<share port> ───────┤  tunnel en
                                        w2ray server ──► internet
 ```
 
-- The tunnel carries **TCP only**. DNS is answered by hev's mapped DNS
-  (`remoteDns`, default), so names resolve on the server side. UDP datagrams
-  to port 53 are relayed as DNS over TCP; other UDP (QUIC, games, VoIP) is
-  dropped and apps fall back to TCP.
+- TCP goes through one WebSocket per connection. DNS is answered by hev's mapped DNS
+  (`remoteDns`, default), so names resolve on the server side, and UDP datagrams
+  to port 53 are relayed as DNS over TCP. Other UDP (NTP, games, VoIP) travels in
+  **UDP flows** on one extra WebSocket when the w2ray server supports them
+  (`udpRelay`); otherwise it is dropped. QUIC (UDP 443) is blocked fast by default
+  (`blockQuic`) so browsers use TCP; turn that off to carry QUIC too, keeping in mind
+  that QUIC inside a TCP WebSocket can be slower than plain HTTPS on a lossy link.
+  UDP leaves from the server's own address. A Worker exit carries TCP only.
 - The app itself is excluded from the VPN, so its connection to the server
   never loops.
 - A wrong password stops the connection at once and is **not retried**: the
@@ -96,6 +100,7 @@ Mode and VPN:
 | `mapDnsAddress`, `mapDnsPort`, `mapDnsNetwork`, `mapDnsNetmask`, `mapDnsCacheSize` | `198.18.0.2`, `53`, `100.64.0.0`, `255.192.0.0`, `10000` | |
 | `dnsIpv4`, `dnsIpv6` | `8.8.8.8`, `2001:4860:4860::8888` | used when `remoteDns` is `false` |
 | `udpDns` | `true` | relay DNS datagrams as DNS over TCP |
+| `udpRelay` | `true` | carry UDP other than DNS through the tunnel's UDP flows (needs a w2ray server with UDP; no effect with a Worker-only profile) |
 | `blockQuic` | `true` | answer QUIC (UDP 443) with Version Negotiation so browsers fall back to TCP at once instead of waiting |
 | `icmpReply` | `false` | answer pings locally |
 | `tcpBufferSize`, `taskStackSize`, `maxSessionCount` | `65536`, `86016`, `0` | hev tuning |

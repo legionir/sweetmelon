@@ -38,6 +38,15 @@ class FakeW2rayServer(
     @Volatile
     var fragmentReplies = false
 
+    /** UDP sessions: 1 = supported, 0 = like an older server (the `udp` message is ignored), 2 = answers with an error. */
+    @Volatile
+    var udpMode = 1
+
+    /** Flows opened / closed by clients (destination as sent, flow id). */
+    val udpOpened = java.util.Collections.synchronizedList(ArrayList<String>())
+    val udpClosed = java.util.Collections.synchronizedList(ArrayList<Int>())
+    val udpSessions = AtomicInteger()
+
     /** Closes the tunnel right after `connected`. */
     @Volatile
     var dropAfterConnect = false
@@ -62,6 +71,8 @@ class FakeW2rayServer(
     private fun serve(sock: Socket) {
         connections.incrementAndGet()
         var target: Socket? = null
+        var udpActive = false
+        val udpSocks = java.util.concurrent.ConcurrentHashMap<Int, java.net.DatagramSocket>()
         try {
             val inp = BufferedInputStream(sock.getInputStream())
             val out = sock.getOutputStream()
@@ -105,6 +116,17 @@ class FakeW2rayServer(
                                 authed = true
                                 sendJson(out, "auth_ok", JSONObject().put("id", "test"))
                             }
+                            "udp" -> {
+                                if (!authed) continue
+                                when (udpMode) {
+                                    1 -> {
+                                        udpActive = true
+                                        udpSessions.incrementAndGet()
+                                        sendJson(out, "udp_ok", JSONObject().put("v", 1).put("maxFlows", 256).put("maxPayload", 65507))
+                                    }
+                                    2 -> sendJson(out, "error", JSONObject().put("message", "UDP is disabled"))
+                                }
+                            }
                             "connect" -> {
                                 if (!authed || target != null) continue
                                 try {
@@ -123,12 +145,15 @@ class FakeW2rayServer(
                             }
                         }
                     }
-                    2 -> if (authed) target?.getOutputStream()?.let { it.write(payload); it.flush() }
+                    2 -> if (authed) {
+                        if (udpActive) udpFrame(payload, udpSocks, out) else target?.getOutputStream()?.let { it.write(payload); it.flush() }
+                    }
                 }
             }
         } catch (e: Exception) {
             // connection ended
         } finally {
+            udpSocks.values.forEach { runCatching { it.close() } }
             try {
                 target?.close()
             } catch (_: Exception) {
@@ -136,6 +161,54 @@ class FakeW2rayServer(
             try {
                 sock.close()
             } catch (_: Exception) {
+            }
+        }
+    }
+
+    /** One UDP flow frame (src/tunnel/udp.js): OPEN connects a datagram socket, DATA sends, replies come back as DATA. */
+    private fun udpFrame(f: ByteArray, socks: java.util.concurrent.ConcurrentHashMap<Int, java.net.DatagramSocket>, out: OutputStream) {
+        if (f.size < 8) return
+        val type = f[0].toInt() and 255
+        val id = ((f[2].toInt() and 255) shl 24) or ((f[3].toInt() and 255) shl 16) or ((f[4].toInt() and 255) shl 8) or (f[5].toInt() and 255)
+        val len = ((f[6].toInt() and 255) shl 8) or (f[7].toInt() and 255)
+        val payload = f.copyOfRange(8, 8 + len)
+        fun frame(t: Int, data: ByteArray): ByteArray = byteArrayOf(t.toByte(), 0, (id ushr 24).toByte(), (id ushr 16).toByte(), (id ushr 8).toByte(), id.toByte(), (data.size shr 8).toByte(), data.size.toByte()) + data
+        when (type) {
+            1 -> {
+                val host: String
+                val port: Int
+                when (payload[0].toInt()) {
+                    1 -> { host = payload.copyOfRange(1, 5).joinToString(".") { (it.toInt() and 255).toString() }; port = ((payload[5].toInt() and 255) shl 8) or (payload[6].toInt() and 255) }
+                    4 -> { host = java.net.InetAddress.getByAddress(payload.copyOfRange(1, 17)).hostAddress.orEmpty(); port = ((payload[17].toInt() and 255) shl 8) or (payload[18].toInt() and 255) }
+                    else -> { val n = payload[1].toInt() and 255; host = String(payload, 2, n); port = ((payload[2 + n].toInt() and 255) shl 8) or (payload[3 + n].toInt() and 255) }
+                }
+                udpOpened.add("$host:$port#$id")
+                val d = java.net.DatagramSocket()
+                d.connect(java.net.InetAddress.getByName(host), port)
+                socks[id] = d
+                Thread {
+                    val b = ByteArray(65535)
+                    try {
+                        while (!d.isClosed) {
+                            val p = java.net.DatagramPacket(b, b.size)
+                            d.receive(p)
+                            synchronized(out) { writeRaw(out, 2, true, frame(2, b.copyOf(p.length))) }
+                        }
+                    } catch (_: Exception) {
+                    }
+                }.also { it.isDaemon = true }.start()
+            }
+            2 -> socks[id]?.let { it.send(java.net.DatagramPacket(payload, payload.size)) }
+            3 -> {
+                udpClosed.add(id)
+                socks.remove(id)?.close()
+            }
+            5 -> {
+                if (id == 0) {
+                    socks.keys.forEach { udpClosed.add(it) }
+                    socks.values.forEach { it.close() }
+                    socks.clear()
+                } else socks.remove(id)?.close()
             }
         }
     }

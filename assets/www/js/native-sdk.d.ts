@@ -239,6 +239,8 @@ export interface W2rayConfig {
   udpDns?: boolean;
   /** Answer QUIC (UDP 443) with a Version Negotiation packet so apps fall back to TCP at once. Default true. */
   blockQuic?: boolean;
+  /** Carry UDP other than DNS through the tunnel's UDP flows when the w2ray server supports them. Default true. */
+  udpRelay?: boolean;
   icmpReply?: boolean;
   tcpBufferSize?: number;
   taskStackSize?: number;

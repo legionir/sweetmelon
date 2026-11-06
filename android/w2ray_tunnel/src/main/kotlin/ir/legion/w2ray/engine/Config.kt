@@ -252,6 +252,8 @@ data class VpnSettings(
     val udpDns: Boolean,
     /** Make QUIC (UDP 443) fail at once so apps use TCP. Default on until UDP is relayed. */
     val blockQuic: Boolean,
+    /** Carry UDP other than DNS through the tunnel's UDP flows (needs a w2ray server with UDP; QUIC stays blocked while [blockQuic] is on). */
+    val udpRelay: Boolean,
     val icmpReply: Boolean,
     val tcpBufferSize: Int,
     val taskStackSize: Int,
@@ -292,6 +294,7 @@ data class VpnSettings(
                 dnsIpv6 = o.optString("dnsIpv6", "2001:4860:4860::8888"),
                 udpDns = o.optBoolean("udpDns", true),
                 blockQuic = o.optBoolean("blockQuic", true),
+                udpRelay = o.optBoolean("udpRelay", true),
                 icmpReply = o.optBoolean("icmpReply", false),
                 tcpBufferSize = tcpBuf,
                 taskStackSize = o.optInt("taskStackSize", minStack).coerceAtLeast(minStack),

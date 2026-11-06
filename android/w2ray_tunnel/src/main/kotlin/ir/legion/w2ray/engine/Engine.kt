@@ -73,6 +73,18 @@ class Engine(
     private var healthy = true
     private val failStreak = AtomicInteger()
 
+    /** UDP flows (SOCKS5 UDP ASSOCIATE) carried on one extra WebSocket of the w2ray server. */
+    val udp = UdpFlowManager(this)
+
+    /** The w2ray server UDP goes to. Null with a Worker and no fallback server: the Worker carries TCP only. */
+    internal fun udpServer(): ServerConfig? = server
+
+    internal fun connectWs(srv: ServerConfig): WsClient = WsClient.connect(srv, newSocket)
+
+    internal fun logUdp(level: Char, message: String) = log(level, message)
+
+    internal fun noteUdpFailure(e: TunnelException) = handleFailure(e)
+
     /** Everything that went through [relay] (proxy traffic, not the TUN interface). */
     val total = Counters()
 
@@ -419,6 +431,7 @@ class Engine(
         val list = synchronized(warm) { warm.toList().also { warm.clear() } }
         list.forEach { it.close() }
         sessions.toList().forEach { it.close() }
+        udp.reset()
         failStreak.set(0)
     }
 
@@ -515,6 +528,7 @@ class Engine(
 
     private fun maintain() {
         val now = System.currentTimeMillis()
+        udp.sweep()
 
         // Ready tunnels that are old or dead go away; they are replaced when the proxy is in use.
         val old = synchronized(warm) {
@@ -562,6 +576,7 @@ class Engine(
     fun shutdown() {
         if (!stopped.compareAndSet(false, true)) return
         resetConnections()
+        udp.shutdown()
         timer.shutdownNow()
         pool.shutdownNow()
     }
