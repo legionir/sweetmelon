@@ -126,9 +126,13 @@ class UdpRelayTest {
         send(c1, a, e1.localPort, "one".toByteArray())
         send(c2, a, e1.localPort, "two".toByteArray()) // another app, same destination
         send(c1, a, e2.localPort, "three".toByteArray()) // same app, another destination
-        assertEquals("echo:one", String(receive(c1)!!.let { it.copyOfRange(10, it.size) }))
+        // The two answers for c1 come from two different echo servers: their order is not defined.
+        val forC1 = setOf(
+            String(receive(c1)!!.let { it.copyOfRange(10, it.size) }),
+            String(receive(c1)!!.let { it.copyOfRange(10, it.size) }),
+        )
+        assertEquals(setOf("echo:one", "echo:three"), forC1)
         assertEquals("echo:two", String(receive(c2)!!.let { it.copyOfRange(10, it.size) }))
-        assertEquals("echo:three", String(receive(c1)!!.let { it.copyOfRange(10, it.size) }))
         assertNull(receive(c2, 300))
         assertEquals(3, srv.udpOpened.size)
         assertEquals(3, srv.udpOpened.map { it.substringAfter('#') }.toSet().size) // three different flow ids
