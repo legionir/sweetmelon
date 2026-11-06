@@ -38,6 +38,13 @@ data class ServerConfig(
     val maxConnections: Int,
     val preferIpv6: Boolean,
     val transport: Transport = Transport.W2RAY,
+    /**
+     * With [Transport.WORKER]: the user's own w2ray server, used for destinations a Worker cannot reach (anything
+     * behind Cloudflare) and when the Worker fails. Null: Worker only.
+     */
+    val fallback: ServerConfig? = null,
+    /** Use [fallback] at all. Off: Worker only, even when a server is configured. */
+    val cloudflareFallback: Boolean = true,
 ) {
     val isWorker: Boolean get() = transport == Transport.WORKER
 
@@ -59,7 +66,40 @@ data class ServerConfig(
         const val DEFAULT_UA =
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
 
+        private val SERVER_KEYS = listOf(
+            "transport", "fallback", "exit", "cloudflareFallback", "url", "serverHost", "serverPort", "useTls",
+            "useSSL", "wsPath", "password", "sni", "hostHeader", "allowInsecure",
+        )
+
+        /** [o] with its server fields replaced by those of [server] (a w2ray server). */
+        private fun withServer(o: JSONObject, server: JSONObject): JSONObject {
+            val m = JSONObject(o.toString())
+            SERVER_KEYS.forEach { m.remove(it) }
+            for (k in server.keys()) m.put(k, server.get(k))
+            m.put("transport", "w2ray")
+            return m
+        }
+
         fun fromJson(o: JSONObject): ServerConfig {
+            val fbJson = o.optJSONObject("fallback")
+            if (o.optString("transport", "w2ray").lowercase() == "worker") {
+                // exit "server": the user's server is the exit, the Worker is not used at all.
+                if (o.optString("exit", "cloudflare").lowercase() == "server") {
+                    if (fbJson == null) throw ConfigException("Choose a server for the server exit, or use the Cloudflare exit")
+                    return fromJson(withServer(o, fbJson))
+                }
+                val worker = parse(o)
+                val fb = if (fbJson != null && fbJson.optString("serverHost", fbJson.optString("url", "")).isNotBlank()) {
+                    parse(withServer(o, fbJson))
+                } else {
+                    null
+                }
+                return worker.copy(fallback = fb, cloudflareFallback = o.optBoolean("cloudflareFallback", true))
+            }
+            return parse(o)
+        }
+
+        private fun parse(o: JSONObject): ServerConfig {
             var host = o.optString("serverHost", "").trim()
             var port = o.optInt("serverPort", 0)
             var tls = if (o.has("useTls")) o.optBoolean("useTls", true) else o.optBoolean("useSSL", true)

@@ -202,6 +202,12 @@ export interface W2rayConfig {
    * `password` is then its AUTH_TOKEN and no w2ray server is needed.
    */
   transport?: "w2ray" | "worker";
+  /** transport "worker": "cloudflare" (default) leaves through the Worker, "server" through `fallback` only. */
+  exit?: "cloudflare" | "server";
+  /** transport "worker": use `fallback` when the Worker fails or the destination is behind Cloudflare. Default true. */
+  cloudflareFallback?: boolean;
+  /** transport "worker": the user's own w2ray server (serverHost/serverPort/useTls/wsPath/password/sni/hostHeader/allowInsecure, or url). */
+  fallback?: Record<string, unknown>;
   sni?: string;
   hostHeader?: string;
   allowInsecure?: boolean;

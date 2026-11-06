@@ -67,6 +67,9 @@ Server (one of `url` or `serverHost`):
 | `serverHost`, `serverPort`, `useTls`, `wsPath` | `443`, `true`, `/` | same, field by field |
 | `password` | required | the tunnel password (the Worker `AUTH_TOKEN` with `transport: "worker"`) |
 | `transport` | `"w2ray"` | `"worker"`: talk to a ws-cf-tunnel Cloudflare Worker directly (`Authorization: Bearer` + `X-Target` on the upgrade), no w2ray server. TCP only; the Worker cannot reach Cloudflare-hosted destinations (see `fallback`) |
+| `exit` | `"cloudflare"` | with `transport: "worker"`: `"cloudflare"` leaves through the Worker; `"server"` ignores the Worker and uses `fallback` as a normal w2ray server |
+| `fallback` | none | with `transport: "worker"`: your own w2ray server (`url` or `serverHost`/`serverPort`/`useTls`/`wsPath`/`password`/`sni`/`hostHeader`/`allowInsecure`) |
+| `cloudflareFallback` | `true` | use `fallback` when the Worker answers 502 / is down, and straight away for IP literals in Cloudflare's ranges (a Worker cannot `connect()` to them). A destination the Worker failed on is sent to the server for 10 minutes |
 | `sni` | host | TLS server name |
 | `hostHeader` | `sni` or host | HTTP `Host` of the upgrade request |
 | `allowInsecure` | `false` | accept any certificate |

@@ -25,6 +25,9 @@ class FakeW2rayServer(
     /** `X-Target` values seen in worker mode. */
     val targets = java.util.Collections.synchronizedList(ArrayList<String>())
 
+    /** Worker mode: `X-Target` values answered with 502, like a destination the Worker cannot reach. */
+    val rejectTargets: MutableSet<String> = java.util.concurrent.ConcurrentHashMap.newKeySet()
+
     private val server = ServerSocket().also { it.bind(InetSocketAddress("127.0.0.1", 0)) }
     val port: Int get() = server.localPort
     val connections = AtomicInteger()
@@ -150,6 +153,10 @@ class FakeW2rayServer(
         }
         val x = headers["x-target"].orEmpty()
         targets.add(x)
+        if (x in rejectTargets) {
+            reply(502, "Bad Gateway")
+            return
+        }
         val host = x.substringBeforeLast(':').trim('[', ']')
         val port = x.substringAfterLast(':').toIntOrNull()
         if (host.isEmpty() || port == null) {

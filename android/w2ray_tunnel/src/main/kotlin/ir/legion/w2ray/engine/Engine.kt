@@ -54,6 +54,9 @@ class Engine(
         Thread(null, r, "w2ray-timer", 256 * 1024).also { it.isDaemon = true }
     }
 
+    /** The w2ray server connections are made to: the configuration itself, or the fallback of a Worker one. */
+    private val server: ServerConfig? = if (cfg.isWorker) cfg.fallback else cfg
+
     private val stopped = AtomicBoolean(false)
     private val warm = ArrayList<Link>()
     private val sessions: MutableSet<Session> = ConcurrentHashMap.newKeySet()
@@ -95,8 +98,43 @@ class Engine(
     fun openLink(host: String, port: Int, timeoutMs: Long = cfg.connectTimeoutMs.toLong()): Link {
         fatalMessage?.let { throw TunnelException(it, FailKind.AUTH) }
         if (stopped.get()) throw TunnelException("Stopped", FailKind.TRANSPORT)
+        if (!cfg.isWorker) return openServerLink(host, port, timeoutMs)
+
+        val fb = server.takeIf { cfg.cloudflareFallback }
+        if (fb != null && (CloudflareRanges.contains(host) || workerSkipped("$host:$port"))) {
+            return openServerLink(host, port, timeoutMs)
+        }
+        try {
+            return openWorkerLink(host, port, timeoutMs)
+        } catch (e: TunnelException) {
+            // A bad token is final. Anything else (the Worker cannot reach the host, or the Worker is down) may
+            // still work through the user's server.
+            if (fb == null || e.kind == FailKind.AUTH || stopped.get()) throw e
+            log('D', "Worker failed for $host:$port (${e.message}), using the server")
+            val link = openServerLink(host, port, timeoutMs)
+            if (e.kind == FailKind.TARGET) rememberWorkerFailure("$host:$port")
+            return link
+        }
+    }
+
+    /** `host:port` pairs the Worker could not reach, so the next connections skip the Worker for a while. */
+    private val workerFailed = ConcurrentHashMap<String, Long>()
+
+    private fun workerSkipped(key: String): Boolean {
+        val until = workerFailed[key] ?: return false
+        if (until > System.currentTimeMillis()) return true
+        workerFailed.remove(key)
+        return false
+    }
+
+    private fun rememberWorkerFailure(key: String) {
+        if (workerFailed.size > 512) workerFailed.clear()
+        workerFailed[key] = System.currentTimeMillis() + WORKER_SKIP_MS
+    }
+
+    private fun openServerLink(host: String, port: Int, timeoutMs: Long): Link {
+        if (server == null) throw TunnelException("No server is configured", FailKind.TRANSPORT)
         lastDemandMs = System.currentTimeMillis()
-        if (cfg.isWorker) return openWorkerLink(host, port, timeoutMs)
         val ready = takeWarm()
         var link = ready ?: newLink()
         try {
@@ -126,7 +164,14 @@ class Engine(
      * This is the "ping" of the server and the first check before a VPN starts.
      */
     fun probe(): Long {
-        if (cfg.isWorker) return probeWorker()
+        if (cfg.isWorker) {
+            try {
+                return probeWorker()
+            } catch (e: TunnelException) {
+                if (server == null || !cfg.cloudflareFallback || e.kind == FailKind.AUTH) throw e
+                log('W', "Worker did not answer (${e.message}), checking the server")
+            }
+        }
         val t0 = System.currentTimeMillis()
         val link = newLink()
         try {
@@ -217,8 +262,9 @@ class Engine(
     }
 
     private fun createLink(): Link {
+        val srv = server ?: throw TunnelException("No server is configured", FailKind.TRANSPORT)
         val ws = try {
-            WsClient.connect(cfg, newSocket)
+            WsClient.connect(srv, newSocket)
         } catch (e: WsException) {
             throw TunnelException(e.message ?: "Cannot connect", FailKind.TRANSPORT, cause = e)
         }
@@ -226,7 +272,7 @@ class Engine(
         link.ws = ws
         ws.start(link) { r -> newThread(r) }
         try {
-            link.sendAuth(cfg.password)
+            link.sendAuth(srv.password)
         } catch (e: WsException) {
             ws.abort()
             throw TunnelException(e.message ?: "Cannot connect", FailKind.TRANSPORT, cause = e)
@@ -243,7 +289,7 @@ class Engine(
     }
 
     private fun topUpAsync() {
-        if (cfg.isWorker || cfg.warmPool <= 0 || stopped.get()) return
+        if (server == null || cfg.warmPool <= 0 || stopped.get()) return
         if (!refilling.compareAndSet(false, true)) return
         execute {
             try {
@@ -523,5 +569,6 @@ class Engine(
     companion object {
         private const val WARM_MAX_AGE_MS = 40_000L
         private const val DEMAND_WINDOW_MS = 60_000L
+        private const val WORKER_SKIP_MS = 10 * 60_000L
     }
 }
