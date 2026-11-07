@@ -5,6 +5,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.net.Socket
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ScheduledExecutorService
@@ -113,35 +114,133 @@ class Engine(
         if (!cfg.isWorker) return openServerLink(host, port, timeoutMs)
 
         val fb = server.takeIf { cfg.cloudflareFallback }
-        if (fb != null && (CloudflareRanges.contains(host) || workerSkipped("$host:$port"))) {
-            return openServerLink(host, port, timeoutMs)
+        if (fb == null) return openWorkerLink(host, port, timeoutMs)
+        if (skipWorker(host, port)) return openServerLink(host, port, timeoutMs)
+
+        // The first connection to a host that nothing is known about finds out whether the Worker can reach it.
+        // Connections that arrive meanwhile wait for that answer (a few seconds at most) instead of all failing
+        // the same way at the same time.
+        val hostKey = normHost(host)
+        var leader: CountDownLatch? = null
+        if (!workerKnownGood(hostKey)) {
+            val mine = CountDownLatch(1)
+            val first = workerInFlight.putIfAbsent(hostKey, mine)
+            if (first == null) {
+                leader = mine
+            } else {
+                try {
+                    first.await(minOf(timeoutMs, FOLLOW_WAIT_MS), TimeUnit.MILLISECONDS)
+                } catch (_: InterruptedException) {
+                    Thread.currentThread().interrupt()
+                }
+                if (skipWorker(host, port)) return openServerLink(host, port, timeoutMs)
+            }
         }
         try {
-            return openWorkerLink(host, port, timeoutMs)
+            val link = openWorkerLink(host, port, timeoutMs)
+            workerTransportStreak.set(0)
+            rememberWorkerGood(hostKey)
+            return link
         } catch (e: TunnelException) {
             // A bad token is final. Anything else (the Worker cannot reach the host, or the Worker is down) may
             // still work through the user's server.
-            if (fb == null || e.kind == FailKind.AUTH || stopped.get()) throw e
+            if (e.kind == FailKind.AUTH || stopped.get()) throw e
             log('D', "Worker failed for $host:$port (${e.message}), using the server")
             val link = openServerLink(host, port, timeoutMs)
-            if (e.kind == FailKind.TARGET) rememberWorkerFailure("$host:$port")
+            rememberWorkerFailure(host, port, e)
             return link
+        } finally {
+            if (leader != null) {
+                workerInFlight.remove(hostKey, leader)
+                leader.countDown()
+            }
         }
     }
 
-    /** `host:port` pairs the Worker could not reach, so the next connections skip the Worker for a while. */
+    // ── Worker or server? ───────────────────────────────────────────
+
+    /** Hosts (or `host:port` pairs) the Worker could not reach, with the time until which the Worker is not asked. */
     private val workerFailed = ConcurrentHashMap<String, Long>()
 
-    private fun workerSkipped(key: String): Boolean {
+    /** Hosts the Worker reached lately: connections to them do not wait for a first answer. */
+    private val workerGood = ConcurrentHashMap<String, Long>()
+
+    private val workerInFlight = ConcurrentHashMap<String, CountDownLatch>()
+
+    /** Failures of the Worker itself (not of one destination) in a row, and the time until which it is left alone. */
+    private val workerTransportStreak = AtomicInteger()
+
+    @Volatile
+    private var workerDownUntil = 0L
+
+    private fun normHost(host: String) = host.trim('[', ']').substringBefore('%').lowercase()
+
+    /** True when this destination should leave through the user's server without asking the Worker first. */
+    private fun skipWorker(host: String, port: Int): Boolean {
+        if (port == 53 || port == 853) return true // the Worker cannot reach DNS servers (plain or over TLS)
+        if (CloudflareRanges.contains(host) || isNonPublic(host)) return true
+        if (System.currentTimeMillis() < workerDownUntil) return true
+        val h = normHost(host)
+        return failureActive(h) || failureActive("$h:$port")
+    }
+
+    private fun failureActive(key: String): Boolean {
         val until = workerFailed[key] ?: return false
         if (until > System.currentTimeMillis()) return true
         workerFailed.remove(key)
         return false
     }
 
-    private fun rememberWorkerFailure(key: String) {
+    private fun workerKnownGood(h: String): Boolean {
+        val until = workerGood[h] ?: return false
+        if (until > System.currentTimeMillis()) return true
+        workerGood.remove(h)
+        return false
+    }
+
+    private fun rememberWorkerGood(h: String) {
+        if (workerGood.size > 512) workerGood.clear()
+        workerGood[h] = System.currentTimeMillis() + WORKER_SKIP_MS
+    }
+
+    /**
+     * Remembers why the Worker did not work for this destination, so the next connections go to the server at once.
+     * - The Worker answered "cannot reach it" (TARGET): a host name is remembered as a whole (a site behind
+     *   Cloudflare fails on every port), an address with its port. For [WORKER_SKIP_MS].
+     * - The Worker did not answer (TRANSPORT, e.g. a timeout): that destination for [WORKER_TRANSIENT_MS]. A timeout
+     *   can also be the destination being slow, so only [WORKER_DOWN_AFTER] such failures in a row, for different
+     *   destinations, mark the Worker itself as down for [WORKER_DOWN_MS].
+     */
+    private fun rememberWorkerFailure(host: String, port: Int, e: TunnelException) {
         if (workerFailed.size > 512) workerFailed.clear()
-        workerFailed[key] = System.currentTimeMillis() + WORKER_SKIP_MS
+        val h = normHost(host)
+        val now = System.currentTimeMillis()
+        if (e.kind == FailKind.TARGET) {
+            workerTransportStreak.set(0) // the Worker answered
+            val key = if (IpUtil.isIpLiteral(h)) "$h:$port" else h
+            workerFailed[key] = now + WORKER_SKIP_MS
+        } else {
+            workerFailed["$h:$port"] = now + WORKER_TRANSIENT_MS
+            if (workerTransportStreak.incrementAndGet() >= WORKER_DOWN_AFTER) {
+                workerDownUntil = now + WORKER_DOWN_MS
+                workerTransportStreak.set(WORKER_DOWN_AFTER - 1) // one more failure after the pause brings the pause back
+                log('W', "The Worker does not answer, using the server for ${WORKER_DOWN_MS / 1000} s")
+            }
+        }
+    }
+
+    /** Addresses only the phone's own network can reach: the Worker refuses them (HTTP 400). Loopback is not listed. */
+    private fun isNonPublic(host: String): Boolean {
+        val h = normHost(host)
+        if (IpUtil.isIpv4(h)) {
+            val v = IpUtil.ipv4ToLong(h)
+            val a = (v shr 24).toInt()
+            val b = ((v shr 16) and 255).toInt()
+            return a == 10 || (a == 172 && b in 16..31) || (a == 192 && b == 168) || (a == 100 && b in 64..127) ||
+                (a == 169 && b == 254) || (a == 198 && (b == 18 || b == 19))
+        }
+        if (IpUtil.isIpv6(h)) return h.startsWith("fc") || h.startsWith("fd") || (h.length >= 3 && h.startsWith("fe") && h[2] in "89ab")
+        return false
     }
 
     private fun openServerLink(host: String, port: Int, timeoutMs: Long): Link {
@@ -585,5 +684,9 @@ class Engine(
         private const val WARM_MAX_AGE_MS = 40_000L
         private const val DEMAND_WINDOW_MS = 60_000L
         private const val WORKER_SKIP_MS = 10 * 60_000L
+        private const val WORKER_TRANSIENT_MS = 60_000L
+        private const val WORKER_DOWN_MS = 30_000L
+        private const val WORKER_DOWN_AFTER = 3
+        private const val FOLLOW_WAIT_MS = 4_000L
     }
 }

@@ -116,6 +116,73 @@ class CloudflareFallbackTest {
     }
 
     @Test
+    fun aHostNameThatFailedIsRememberedForEveryPort() {
+        val worker = FakeW2rayServer("-", "/", workerToken = "tok").also { closers.add(it) }
+        val server = FakeW2rayServer("pw").also { closers.add(it) }
+        val a = echo()
+        val b = echo()
+        worker.rejectTargets.add("localhost:${a.localPort}")
+        val eng = engine(cfg(worker, server))
+
+        assertEquals("one", roundTrip(eng.openLink("localhost", a.localPort), "one"))
+        assertEquals(1, worker.targets.size)
+        // A site behind Cloudflare fails on every port: another port of the same name skips the Worker too.
+        assertEquals("two", roundTrip(eng.openLink("localhost", b.localPort), "two"))
+        assertEquals(1, worker.targets.size)
+    }
+
+    @Test
+    fun connectionsToTheSameNewHostWaitForTheFirstAnswer() {
+        val worker = FakeW2rayServer("-", "/", workerToken = "tok").also { closers.add(it) }
+        val server = FakeW2rayServer("pw").also { closers.add(it) }
+        val echo = echo()
+        worker.rejectTargets.add("localhost:${echo.localPort}")
+        val eng = engine(cfg(worker, server))
+
+        val go = java.util.concurrent.CountDownLatch(1)
+        val results = java.util.concurrent.ConcurrentLinkedQueue<String>()
+        val threads = (1..6).map { n ->
+            Thread {
+                go.await()
+                results.add(roundTrip(eng.openLink("localhost", echo.localPort), "m$n"))
+            }.also { it.start() }
+        }
+        go.countDown()
+        threads.forEach { it.join(15000) }
+        assertEquals(6, results.size)
+        assertEquals(1, worker.targets.size, "only the first connection asks the Worker: ${worker.targets}")
+    }
+
+    @Test
+    fun dnsAndNonPublicAddressesSkipTheWorker() {
+        val worker = FakeW2rayServer("-", "/", workerToken = "tok").also { closers.add(it) }
+        val server = FakeW2rayServer("pw").also { closers.add(it) }
+        val eng = engine(cfg(worker, server))
+        for ((h, p) in listOf("203.0.113.5" to 53, "203.0.113.5" to 853, "198.18.0.2" to 853, "10.1.2.3" to 443, "192.168.1.5" to 80, "fd00::1" to 443)) {
+            // Whether the server can reach them from the test machine does not matter, only who was asked.
+            runCatching { eng.openLink(h, p, 1500).close() }
+        }
+        assertTrue(worker.targets.isEmpty(), "the Worker must not be asked: ${worker.targets}")
+        assertTrue(server.connections.get() >= 1)
+    }
+
+    @Test
+    fun aWorkerThatDoesNotAnswerIsLeftAloneForAWhile() {
+        val worker = FakeW2rayServer("-", "/", workerToken = "tok").also { closers.add(it) }
+        val server = FakeW2rayServer("pw").also { closers.add(it) }
+        val logs = java.util.Collections.synchronizedList(ArrayList<String>())
+        val eng = Engine(cfg(worker, server), { Socket() }, { _, m -> logs.add(m) }).also { e -> closers.add(AutoCloseable { e.shutdown() }) }
+        worker.close() // nothing listens on the Worker's port any more: connection refused
+
+        val echoes = (1..5).map { echo() }
+        for ((i, e) in echoes.withIndex()) {
+            assertEquals("m$i", roundTrip(eng.openLink("127.0.0.1", e.localPort), "m$i"))
+        }
+        assertEquals(3, logs.count { it.startsWith("Worker failed for") }, "after three failures the Worker is not asked: $logs")
+        assertTrue(logs.any { it.contains("does not answer") }, logs.toString())
+    }
+
+    @Test
     fun withoutAFallbackTheWorkerErrorIsFinal() {
         val worker = FakeW2rayServer("-", "/", workerToken = "tok").also { closers.add(it) }
         val echo = echo()
