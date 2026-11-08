@@ -192,6 +192,25 @@ class UdpRelayTest {
     }
 
     @Test
+    fun refusedQuicIsAnsweredAtOnceSoTheAppUsesTcp() {
+        val (srv, _, socks) = setup(blockQuic = false)
+        srv.udpRefuse = true
+        val a = associate(socks)
+        val c = client()
+        val initial = ByteArray(1200).also { it[0] = 0xC3.toByte(); it[4] = 1; it[5] = 4; it[10] = 4 }
+        send(c, a, 443, initial)
+        // The server says "not allowed": the app gets a Version Negotiation packet (version 0) instead of a timeout.
+        val r = assertNotNull(receive(c))
+        assertEquals(0, r[11].toInt() or r[12].toInt() or r[13].toInt() or r[14].toInt())
+        // Later attempts to the same host are answered without asking the server again.
+        val opened = srv.udpOpened.size
+        send(c, a, 443, initial)
+        assertNotNull(receive(c))
+        assertEquals(opened, srv.udpOpened.size)
+        assertEquals(0, srv.udpOpened.size)
+    }
+
+    @Test
     fun relayCanBeTurnedOff() {
         val (srv, _, socks) = setup(relay = false)
         val e = echo()

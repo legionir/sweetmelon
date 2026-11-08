@@ -179,6 +179,24 @@ class UdpFlowManager internal constructor(private val engine: Engine) {
         var last = System.currentTimeMillis()
         var opened = false
         val pending = ArrayList<ByteArray>()
+
+        /** The first QUIC Initial sent on this flow (UDP/443), kept until something answers: it is what a refusal is answered with. */
+        @Volatile
+        var initial: ByteArray? = null
+    }
+
+    /**
+     * `host` names the server refused UDP/443 for (it resolves to an address the server may not use, or it is
+     * unreachable from there), with the time until which QUIC to them is answered at once with a Version Negotiation
+     * packet. The app then uses TCP, which leaves through the proxy of the server, instead of waiting for a timeout.
+     */
+    private val quicRefused = ConcurrentHashMap<String, Long>()
+
+    private fun quicRefusedNow(host: String): Boolean {
+        val until = quicRefused[host] ?: return false
+        if (until > System.currentTimeMillis()) return true
+        quicRefused.remove(host)
+        return false
     }
 
     private val lock = Any()
@@ -214,6 +232,17 @@ class UdpFlowManager internal constructor(private val engine: Engine) {
             dropped.incrementAndGet()
             return
         }
+        if (port == 443 && quicRefusedNow(host)) {
+            // The server already said no to this host: tell the app to use TCP without another round trip.
+            QuicBlocker.versionNegotiation(payload)?.let { vn ->
+                try {
+                    reply(vn)
+                } catch (_: Exception) {
+                }
+            }
+            dropped.incrementAndGet()
+            return
+        }
         var refused = false
         synchronized(lock) {
             val now = System.currentTimeMillis()
@@ -233,6 +262,7 @@ class UdpFlowManager internal constructor(private val engine: Engine) {
                 byId[f.id] = f
             }
             f.last = now
+            if (port == 443 && f.initial == null && payload.size >= 1200) f.initial = payload
             val l = link
             if (l != null && l.ready && !l.dead) {
                 if (!f.opened) open(l, f)
@@ -365,6 +395,7 @@ class UdpFlowManager internal constructor(private val engine: Engine) {
             UdpFrames.DATA -> {
                 val flow = byId[f.flowId] ?: return
                 flow.last = System.currentTimeMillis()
+                flow.initial = null
                 received.incrementAndGet()
                 try {
                     flow.reply(f.payload)
@@ -374,6 +405,20 @@ class UdpFlowManager internal constructor(private val engine: Engine) {
             UdpFrames.ERROR -> {
                 val flow = byId[f.flowId] ?: return
                 engine.logUdp('D', "UDP ${flow.key.host}:${flow.key.port}: ${String(f.payload, 1.coerceAtMost(f.payload.size), maxOf(0, f.payload.size - 1), Charsets.UTF_8)}")
+                // NOT_ALLOWED (2), UNREACHABLE (4), FAILED (5) on QUIC: the app should switch to TCP now, not after a timeout.
+                val code = if (f.payload.isNotEmpty()) f.payload[0].toInt() and 255 else 0
+                if (flow.key.port == 443 && (code == 2 || code == 4 || code == 5)) {
+                    if (quicRefused.size > 512) quicRefused.clear()
+                    quicRefused[flow.key.host] = System.currentTimeMillis() + QUIC_REFUSED_MS
+                    flow.initial?.let { init ->
+                        QuicBlocker.versionNegotiation(init)?.let { vn ->
+                            try {
+                                flow.reply(vn)
+                            } catch (_: Exception) {
+                            }
+                        }
+                    }
+                }
                 remove(flow, notify = false)
             }
             UdpFrames.CLOSE -> byId[f.flowId]?.let { remove(it, notify = false) }
@@ -438,6 +483,7 @@ class UdpFlowManager internal constructor(private val engine: Engine) {
         synchronized(lock) {
             unsupportedUntil = 0
             retryAt = 0
+            quicRefused.clear()
         }
     }
 
@@ -454,6 +500,7 @@ class UdpFlowManager internal constructor(private val engine: Engine) {
         private const val UNSUPPORTED_AFTER_MS = 4_000L
         private const val UNSUPPORTED_MS = 5 * 60_000L
         private const val RETRY_MS = 10_000L
+        private const val QUIC_REFUSED_MS = 5 * 60_000L
         private const val SESSION_IDLE_MS = 60_000L
     }
 }

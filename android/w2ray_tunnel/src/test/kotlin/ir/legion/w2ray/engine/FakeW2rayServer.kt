@@ -43,6 +43,10 @@ class FakeW2rayServer(
     var udpMode = 1
 
     /** Flows opened / closed by clients (destination as sent, flow id). */
+    /** UDP OPEN is answered with an ERROR frame (code 2, NOT_ALLOWED) like a server whose resolver returns a private address. */
+    @Volatile
+    var udpRefuse = false
+
     val udpOpened = java.util.Collections.synchronizedList(ArrayList<String>())
     val udpClosed = java.util.Collections.synchronizedList(ArrayList<Int>())
     val udpSessions = AtomicInteger()
@@ -175,6 +179,10 @@ class FakeW2rayServer(
         fun frame(t: Int, data: ByteArray): ByteArray = byteArrayOf(t.toByte(), 0, (id ushr 24).toByte(), (id ushr 16).toByte(), (id ushr 8).toByte(), id.toByte(), (data.size shr 8).toByte(), data.size.toByte()) + data
         when (type) {
             1 -> {
+                if (udpRefuse) {
+                    synchronized(out) { writeRaw(out, 2, true, frame(4, byteArrayOf(2) + "Destination not allowed".toByteArray())) }
+                    return
+                }
                 val host: String
                 val port: Int
                 when (payload[0].toInt()) {
